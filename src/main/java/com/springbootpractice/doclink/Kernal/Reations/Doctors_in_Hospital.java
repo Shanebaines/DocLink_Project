@@ -1,5 +1,7 @@
-package com.springbootpractice.doclink.Kernal.Entity;
+package com.springbootpractice.doclink.Kernal.Reations;
 
+import com.springbootpractice.doclink.Kernal.Entity.Doctor;
+import com.springbootpractice.doclink.Kernal.Entity.Hospital;
 import jakarta.persistence.*;
 import lombok.*;
 import java.io.Serializable;
@@ -8,8 +10,8 @@ import java.time.LocalDate;
 @Entity
 @Table(name = "hospital_doctors")
 @Data @NoArgsConstructor @AllArgsConstructor
-@IdClass(HospitalDoctor.PK.class)
-public class HospitalDoctor {
+@IdClass(Doctors_in_Hospital.PK.class)
+public class Doctors_in_Hospital {
 
     @Id
     @ManyToOne
