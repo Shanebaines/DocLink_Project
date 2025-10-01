@@ -2,6 +2,8 @@ package com.springbootpractice.doclink.Listner.Dto.Response;
 
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 public class ViewDoctorDto {
     private String image;
@@ -13,4 +15,5 @@ public class ViewDoctorDto {
     private String phoneNumber;
     private String email;
     private String address;
+    private List<WorkPLaceDto> workPlaces;
 }

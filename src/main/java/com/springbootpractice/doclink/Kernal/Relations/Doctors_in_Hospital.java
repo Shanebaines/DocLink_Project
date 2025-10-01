@@ -1,4 +1,4 @@
-package com.springbootpractice.doclink.Kernal.Reations;
+package com.springbootpractice.doclink.Kernal.Relations;
 
 import com.springbootpractice.doclink.Kernal.Entity.Doctor;
 import com.springbootpractice.doclink.Kernal.Entity.Hospital;

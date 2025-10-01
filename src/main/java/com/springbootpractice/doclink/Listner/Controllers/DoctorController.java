@@ -17,6 +17,6 @@ public class DoctorController {
 
     @GetMapping("/view")
     public ResponseEntity<ViewDoctorDto> viewDoctor(@RequestParam Integer id) {
-        return doctorService.viewDoctor(id);
+        return doctorService.viewDoctor(Long.valueOf(id));
     }
 }
