@@ -4,6 +4,7 @@ import lombok.Data;
 
 @Data
 public class WorkPLaceDto {
+    private Long hospitalId;
     private String hospitalName;
     private String hospitalAddress;
     private String phoneNumber;
