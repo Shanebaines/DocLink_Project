@@ -1,0 +1,120 @@
+/* ====== General ====== */
+body {
+  margin: 0;
+  font-family: "Segoe UI", Roboto, sans-serif;
+  background: #f9fafc;
+  color: #333;
+}
+
+/* ====== Header ====== */
+.header {
+  text-align: center;
+  margin: 40px 0 20px;
+}
+
+.header h1 {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: #1a202c;
+}
+
+.header p {
+  font-size: 1rem;
+  color: #555;
+  margin-top: 8px;
+}
+
+/* ====== Buttons ====== */
+.action-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin: 20px 0;
+}
+
+button {
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+
+.primary-btn {
+  background: #2563eb;
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.primary-btn:hover {
+  background: #1d4ed8;
+}
+
+.secondary-btn {
+  background: #fff;
+  color: #2563eb;
+  padding: 12px 20px;
+  border: 2px solid #2563eb;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.secondary-btn:hover {
+  background: #f0f4ff;
+}
+
+/* ====== Search Bar ====== */
+.search-bar {
+  background: #fff;
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.search-input {
+  flex: 1 1 300px;
+  display: flex;
+  align-items: center;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 8px 12px;
+  background: #fafafa;
+}
+
+.search-input input {
+  border: none;
+  outline: none;
+  flex: 1;
+  font-size: 1rem;
+  background: transparent;
+}
+
+.search-icon {
+  color: #888;
+}
+
+/* ====== Dropdowns ====== */
+.dropdown {
+  flex: 1 1 200px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: border-color 0.3s;
+}
+
+.dropdown:hover {
+  border-color: #2563eb;
+}
