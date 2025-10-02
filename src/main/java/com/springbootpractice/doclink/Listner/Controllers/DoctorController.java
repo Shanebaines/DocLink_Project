@@ -22,7 +22,6 @@ public class DoctorController {
     public ResponseEntity<ViewDoctorDto> viewDoctor(@RequestParam Integer id) {
         return doctorService.viewDoctor(Long.valueOf(id));
     }
-
     @GetMapping("/viewAll")
     public ResponseEntity<List<ViewDoctorsDto>> viewDoctors() {
         return doctorService.viewDoctors();

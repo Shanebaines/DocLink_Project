@@ -1,5 +1,6 @@
 package com.springbootpractice.doclink.Kernal.Service;
 
+import com.springbootpractice.doclink.Dealer.AppointmentRepository;
 import com.springbootpractice.doclink.Dealer.DoctorAvailabilityRepository;
 import com.springbootpractice.doclink.Dealer.DoctorRepository;
 import com.springbootpractice.doclink.Kernal.Entity.Doctor;
@@ -18,6 +19,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,6 +29,7 @@ public class DoctorService {
 
     private final DoctorRepository doctorRepository;
     private final DoctorAvailabilityRepository doctorAvailabilityRepository;
+    private final AppointmentRepository appointmentRepository;
 
     @Transactional(readOnly = true)
     public ResponseEntity<ViewDoctorDto> viewDoctor(Long id) {
@@ -62,13 +65,20 @@ public class DoctorService {
         WorkPLaceDto w = new WorkPLaceDto();
         Hospital h = da.getHospital();
 
-        w.setHospitalId(h.getHospitalId());
+        Long hospitalId = h.getHospitalId();
+        Integer count = 0;
+        Integer numberOfAppointmentsCanGet = da.getTotalSeats();
+        w.setHospitalId(hospitalId);
         w.setHospitalName(h.getHospitalName());
         w.setHospitalAddress(h.getAddress());
         w.setPhoneNumber(h.getPhoneNumber());
 
-        w.setAvailableSeats(null);
-        w.setTotalSeats(da.getTotalSeats());
+        Optional<Integer> optionalCount = appointmentRepository.countByHospitalHospitalId(hospitalId).describeConstable();
+        if (optionalCount.isPresent()) {
+            count = optionalCount.get();
+            w.setAvailableSeats(numberOfAppointmentsCanGet - count);
+        }
+        w.setTotalSeats(numberOfAppointmentsCanGet);
 
         w.setTimePeriod(formatTimePeriod(da.getStartTime(), da.getEndTime()));
         w.setAvailability(Boolean.TRUE.equals(da.getAvailability()) ? "AVAILABLE" : "UNAVAILABLE");
