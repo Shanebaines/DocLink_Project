@@ -6,6 +6,7 @@ import com.springbootpractice.doclink.Kernal.Entity.Doctor;
 import com.springbootpractice.doclink.Kernal.Entity.Hospital;
 import com.springbootpractice.doclink.Kernal.Relations.Doctor_availability;
 import com.springbootpractice.doclink.Listner.Dto.Response.ViewDoctorDto;
+import com.springbootpractice.doclink.Listner.Dto.Response.ViewDoctorsDto;
 import com.springbootpractice.doclink.Listner.Dto.Response.WorkPLaceDto;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -80,5 +82,21 @@ public class DoctorService {
         if (s.isEmpty()) return "- " + e;
         if (e.isEmpty()) return s + " -";
         return s + " - " + e;
+    }
+
+    public ResponseEntity<List<ViewDoctorsDto>> viewDoctors() {
+        List<Doctor> doctors = doctorRepository.findAll();
+
+        List<ViewDoctorsDto> doctorsAvailable = doctors.stream().map(this::toViewDoctorsDto).collect(Collectors.toList());
+        return ResponseEntity.ok(doctorsAvailable);
+    }
+
+    private ViewDoctorsDto toViewDoctorsDto(Doctor doctor) {
+        ViewDoctorsDto dto = new ViewDoctorsDto();
+
+        dto.setImage(String.valueOf(doctor.getImage()));
+        dto.setName(doctor.getUser().getFirstName() + " " + doctor.getUser().getLastName());
+        dto.setSpecialization(String.valueOf(doctor.getSpecialization()));
+        return dto;
     }
 }
