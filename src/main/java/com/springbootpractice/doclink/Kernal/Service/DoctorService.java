@@ -62,6 +62,7 @@ public class DoctorService {
         WorkPLaceDto w = new WorkPLaceDto();
         Hospital h = da.getHospital();
 
+        w.setHospitalId(h.getHospitalId());
         w.setHospitalName(h.getHospitalName());
         w.setHospitalAddress(h.getAddress());
         w.setPhoneNumber(h.getPhoneNumber());
@@ -95,6 +96,7 @@ public class DoctorService {
         ViewDoctorsDto dto = new ViewDoctorsDto();
 
         dto.setImage(String.valueOf(doctor.getImage()));
+        dto.setDoctorId(doctor.getDoctorId());
         dto.setName(doctor.getUser().getFirstName() + " " + doctor.getUser().getLastName());
         dto.setSpecialization(String.valueOf(doctor.getSpecialization()));
         return dto;
