@@ -1,24 +1,57 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import SearchBar from '../components/SearchBar';
+import DoctorCard from '../components/DoctorCard';
+import { fetchSpecializations, searchDoctors } from '../api/doctor';
 
 export default function Home() {
   const [query, setQuery] = useState('');
   const [specialty, setSpecialty] = useState('');
   const [district, setDistrict] = useState('');
 
-  const handleNearby = () => {
-    // TODO: implement geolocation search
-    console.log('Find Nearby Clinics clicked');
-  };
+  const [specializations, setSpecializations] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [results, setResults] = useState([]);
+  const [page, setPage] = useState(0);
+  const size = 12;
+  const [totalPages, setTotalPages] = useState(0);
 
-  const handleEmergency = () => {
-    // TODO: navigate to emergency booking
-    console.log('Emergency Booking clicked');
-  };
+  // load specializations for dropdown
+  useEffect(() => {
+    fetchSpecializations()
+      .then((res) => setSpecializations(res.data || []))
+      .catch(() => setSpecializations([]));
+  }, []);
 
+  const doSearch = useCallback((p = 0) => {
+    setLoading(true);
+    searchDoctors({ q: query, specialization: specialty, district, page: p, size })
+      .then((res) => {
+        const data = res.data || { content: [], totalPages: 0, page: 0 };
+        setResults(data.content || []);
+        setTotalPages(data.totalPages || 0);
+        setPage(data.page || 0);
+      })
+      .catch(() => {
+        setResults([]);
+        setTotalPages(0);
+        setPage(0);
+      })
+      .finally(() => setLoading(false));
+  }, [query, specialty, district]);
+
+  // debounce search when filters change
+  const debounceRef = useRef(null);
+  useEffect(() => {
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => doSearch(0), 350);
+    return () => clearTimeout(debounceRef.current);
+  }, [query, specialty, district, doSearch]);
+
+  // submit just triggers current search without waiting for debounce
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log({ query, specialty, district });
-    // TODO: run your search
+    clearTimeout(debounceRef.current);
+    doSearch(0);
   };
 
   return (
@@ -30,13 +63,12 @@ export default function Home() {
         </p>
 
         <div className="action-row">
-          <button className="btn btn-primary" onClick={handleNearby}>
-            <span className="btn-icon" aria-hidden="true">📍</span>
+          <button className="btn btn-primary" onClick={() => {}}>
+            <span aria-hidden="true">📍</span>
             <span>Find Nearby Clinics</span>
           </button>
-
-          <button className="btn btn-outline" onClick={handleEmergency}>
-            <span className="btn-icon" aria-hidden="true">🗓️</span>
+          <button className="btn btn-outline" onClick={() => {}}>
+            <span aria-hidden="true">🗓️</span>
             <span>Emergency Booking</span>
           </button>
         </div>
@@ -44,45 +76,38 @@ export default function Home() {
 
       <section className="container">
         <div className="search-card">
-          <form className="search-grid" onSubmit={handleSubmit}>
-            <div className="search-input-wrap">
-              <span className="icon" aria-hidden="true">🔍</span>
-              <input
-                className="input"
-                type="search"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search doctors, specialties, or hospitals..."
-                aria-label="Search"
-              />
+          <SearchBar
+            query={query}
+            onQueryChange={setQuery}
+            specialization={specialty}
+            onSpecializationChange={setSpecialty}
+            district={district}
+            onDistrictChange={setDistrict}
+            specializationOptions={specializations}
+            onSubmit={handleSubmit}
+          />
+        </div>
+
+        <div className="results">
+          {loading && <p>Loading…</p>}
+
+          {!loading && results.length === 0 && (
+            <p>No doctors found</p>
+          )}
+
+          <div className="results-grid">
+            {results.map((doc) => (
+              <DoctorCard key={doc.doctorId} doctor={doc} />
+            ))}
+          </div>
+
+          {!loading && totalPages > 1 && (
+            <div className="pagination">
+              <button disabled={page === 0} onClick={() => doSearch(page - 1)}>Prev</button>
+              <span>Page {page + 1} of {totalPages}</span>
+              <button disabled={page + 1 >= totalPages} onClick={() => doSearch(page + 1)}>Next</button>
             </div>
-
-            <select
-              className="select"
-              value={specialty}
-              onChange={(e) => setSpecialty(e.target.value)}
-              aria-label="Specialty"
-            >
-              <option value="" disabled>All Specialties</option>
-              <option value="cardiology">Cardiology</option>
-              <option value="dermatology">Dermatology</option>
-              <option value="orthopedics">Orthopedics</option>
-              <option value="pediatrics">Pediatrics</option>
-            </select>
-
-            <select
-              className="select"
-              value={district}
-              onChange={(e) => setDistrict(e.target.value)}
-              aria-label="District"
-            >
-              <option value="" disabled>All Districts</option>
-              <option value="colombo">Colombo</option>
-              <option value="kandy">Kandy</option>
-              <option value="galle">Galle</option>
-              <option value="matara">Matara</option>
-            </select>
-          </form>
+          )}
         </div>
       </section>
     </>
