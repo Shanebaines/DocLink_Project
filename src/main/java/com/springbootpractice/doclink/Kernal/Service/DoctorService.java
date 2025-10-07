@@ -78,7 +78,7 @@ public class DoctorService {
         w.setHospitalAddress(h.getAddress());
         w.setPhoneNumber(h.getPhoneNumber());
 
-        // Load all active availability rows for this doctor at this hospital
+        // Load all active availability rows for this doctor at this hospital, ordered by slot's day/time
         List<Doctor_availability> slots = doctorAvailabilityRepository
                 .findByDoctorDoctorIdAndHospitalHospitalIdAndAvailabilityTrueOrderByDayOfWeekAscStartTimeAsc(
                         doctorId, h.getHospitalId()
@@ -136,7 +136,7 @@ public class DoctorService {
         LocalDateTime start = LocalDateTime.of(candidateDate, slot.getStartTime());
         LocalDateTime end = LocalDateTime.of(candidateDate, slot.getEndTime());
 
-        // Handle overnight ranges (end before start)
+        // Handle overnight ranges (end before start) — usually not needed if DB enforces end > start
         if (slot.getEndTime().isBefore(slot.getStartTime())) {
             end = end.plusDays(1);
         }
@@ -176,7 +176,7 @@ public class DoctorService {
 
     // Which statuses should block seats (adjust to match your enum values)
     private List<AppointmentStatusType> activeStatuses() {
-        // Add more if needed: e.g., confirmed
+        // Add more if needed (e.g., CONFIRMED) depending on your enum
         return List.of(AppointmentStatusType.scheduled);
     }
 
