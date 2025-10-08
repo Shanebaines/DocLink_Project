@@ -27,7 +27,7 @@ public class DoctorController {
         return doctorService.viewDoctors();
     }
 
-    // Paged search (name or specialization)
+    // Existing: paged search (name or specialization)
     @GetMapping("/search")
     public ResponseEntity<PagedResponse<ViewDoctorsDto>> searchDoctors(
             @RequestParam(required = false) String q,
@@ -38,12 +38,34 @@ public class DoctorController {
         return doctorService.searchDoctors(q, specialization, district, page, size);
     }
 
-    // Non-paged search (returns same shape as /viewAll)
+    // Existing: non-paged search (returns same shape as /viewAll)
     @GetMapping("/searchList")
     public ResponseEntity<List<ViewDoctorsDto>> searchDoctorsList(
             @RequestParam(required = false) String q,
             @RequestParam(required = false) String specialization) {
         return doctorService.searchDoctorsList(q, specialization);
+    }
+
+    // NEW: paged search + hospital filters
+    @GetMapping("/searchByHospital")
+    public ResponseEntity<PagedResponse<ViewDoctorsDto>> searchDoctorsByHospital(
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) String specialization,
+            @RequestParam(required = false) Long hospitalId,
+            @RequestParam(required = false, name = "hospital") String hospitalName,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "12") int size) {
+        return doctorService.searchDoctorsByHospital(q, specialization, hospitalId, hospitalName, page, size);
+    }
+
+    // NEW: non-paged version (same shape as /viewAll)
+    @GetMapping("/searchByHospitalList")
+    public ResponseEntity<List<ViewDoctorsDto>> searchDoctorsByHospitalList(
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) String specialization,
+            @RequestParam(required = false) Long hospitalId,
+            @RequestParam(required = false, name = "hospital") String hospitalName) {
+        return doctorService.searchDoctorsByHospitalList(q, specialization, hospitalId, hospitalName);
     }
 
     @GetMapping("/specializations")

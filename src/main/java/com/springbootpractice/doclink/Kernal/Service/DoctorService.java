@@ -1,4 +1,5 @@
 package com.springbootpractice.doclink.Kernal.Service;
+
 import com.springbootpractice.doclink.Dealer.DoctorAvailabilityRepository;
 import com.springbootpractice.doclink.Dealer.DoctorRepository;
 import com.springbootpractice.doclink.Kernal.Entity.Doctor;
@@ -102,12 +103,11 @@ public class DoctorService {
         return dto;
     }
 
-    // Paged search by name or specialization
+    // Existing: Paged search by name or specialization
     @Transactional(readOnly = true)
     public ResponseEntity<PagedResponse<ViewDoctorsDto>> searchDoctors(
             String q, String specialization, String district, int page, int size) {
 
-        // district intentionally ignored (your request was name or specialization)
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "doctorId"));
         Page<Doctor> result = doctorRepository.searchByNameOrSpecialization(
                 emptyToNull(q), emptyToNull(specialization), pageable);
@@ -126,11 +126,49 @@ public class DoctorService {
         return ResponseEntity.ok(response);
     }
 
-    // Non-paged variant (returns same shape as /viewAll)
+    // Existing: Non-paged list (returns same shape as /viewAll)
     @Transactional(readOnly = true)
     public ResponseEntity<List<ViewDoctorsDto>> searchDoctorsList(String q, String specialization) {
         List<Doctor> docs = doctorRepository.searchListByNameOrSpecialization(
                 emptyToNull(q), emptyToNull(specialization));
+        List<ViewDoctorsDto> out = docs.stream()
+                .map(this::toViewDoctorsDto)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(out);
+    }
+
+    // NEW: Paged search with hospital filter
+    @Transactional(readOnly = true)
+    public ResponseEntity<PagedResponse<ViewDoctorsDto>> searchDoctorsByHospital(
+            String q, String specialization, Long hospitalId, String hospitalName,
+            int page, int size) {
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "doctorId"));
+        Page<Doctor> result = doctorRepository.searchByNameSpecAndHospital(
+                emptyToNull(q), emptyToNull(specialization), hospitalId, emptyToNull(hospitalName), pageable);
+
+        List<ViewDoctorsDto> content = result.getContent().stream()
+                .map(this::toViewDoctorsDto)
+                .collect(Collectors.toList());
+
+        PagedResponse<ViewDoctorsDto> response = new PagedResponse<>(
+                content,
+                result.getNumber(),
+                result.getSize(),
+                result.getTotalElements(),
+                result.getTotalPages()
+        );
+        return ResponseEntity.ok(response);
+    }
+
+    // NEW: Non-paged list with hospital filter (same shape as /viewAll)
+    @Transactional(readOnly = true)
+    public ResponseEntity<List<ViewDoctorsDto>> searchDoctorsByHospitalList(
+            String q, String specialization, Long hospitalId, String hospitalName) {
+
+        List<Doctor> docs = doctorRepository.searchListByNameSpecAndHospital(
+                emptyToNull(q), emptyToNull(specialization), hospitalId, emptyToNull(hospitalName));
+
         List<ViewDoctorsDto> out = docs.stream()
                 .map(this::toViewDoctorsDto)
                 .collect(Collectors.toList());
