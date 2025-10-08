@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface DoctorRepository extends JpaRepository<Doctor,Integer> {
+public interface DoctorRepository extends JpaRepository<Doctor,Long> {
     List<Doctor> findAll();
+
 }
