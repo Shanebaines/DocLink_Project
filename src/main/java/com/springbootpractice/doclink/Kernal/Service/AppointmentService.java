@@ -3,7 +3,6 @@ package com.springbootpractice.doclink.Kernal.Service;
 import com.springbootpractice.doclink.Dealer.AppointmentRepository;
 import com.springbootpractice.doclink.Dealer.DoctorTimeSlotRepository;
 import com.springbootpractice.doclink.Kernal.Entity.Appointment;
-import com.springbootpractice.doclink.Kernal.Relations.Doctor_time_slots;
 import com.springbootpractice.doclink.Listner.Dto.Response.viewAppointmentsDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

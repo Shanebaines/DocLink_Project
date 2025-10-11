@@ -30,11 +30,8 @@ public class DoctorService {
 
     private final DoctorRepository doctorRepository;
     private final DoctorsInHospitalRepository doctorsInHospitalRepository;
-    private final DoctorTimeSlotRepository doctorTimeSlotRepository; // <-- new repo for doctor_time_slots table
+    private final DoctorTimeSlotRepository doctorTimeSlotRepository;
 
-    /**
-     * View a single doctor and include their workplaces + time slots.
-     */
     public ResponseEntity<ViewDoctorDto> viewDoctor(Long id) {
         Optional<Doctor> optDoctor = doctorRepository.findById(id);
         if (optDoctor.isEmpty()) {
@@ -53,7 +50,6 @@ public class DoctorService {
         dto.setEmail(doctor.getUser().getEmail());
         dto.setAddress(doctor.getUser().getAddress());
 
-        // All hospital links for this doctor
         List<Doctors_in_Hospital> places = doctorsInHospitalRepository.findAllByDoctorIdWithHospital(id);
 
         List<WorkPLaceDto> workPlaces = places.stream()
@@ -64,9 +60,6 @@ public class DoctorService {
         return ResponseEntity.ok(dto);
     }
 
-    /**
-     * Convert doctor-hospital link into workplace + time slots DTO.
-     */
     private WorkPLaceDto toWorkPlaceDto(Doctors_in_Hospital dih, Long doctorId) {
         Hospital hospital = dih.getHospital();
 
@@ -77,12 +70,10 @@ public class DoctorService {
         workplaceDto.setHospitalAddress(hospital.getAddress());
         workplaceDto.setPhoneNumber(hospital.getPhoneNumber());
 
-        // Fetch all time slots related to this doctor and hospital
         List<Doctor_time_slots> timeSlots =
                 doctorTimeSlotRepository.findByDoctorDoctorIdAndHospitalHospitalIdOrderByDayOfWeekAscStartTimeAsc(
                         doctorId, hospital.getHospitalId());
 
-        // Convert time slots to DTOs
         List<AvailableSlotsDto> slotDtos = timeSlots.stream()
                 .map(this::toAvailableSlotDto)
                 .collect(Collectors.toList());
@@ -91,12 +82,9 @@ public class DoctorService {
         return workplaceDto;
     }
 
-    /**
-     * Convert a Doctor_time_slots entity into simplified AvailableSlotsDto.
-     */
     private AvailableSlotsDto toAvailableSlotDto(Doctor_time_slots slot) {
         AvailableSlotsDto dto = new AvailableSlotsDto();
-        dto.setSlotId(slot.getId());                       // <-- include slot id
+        dto.setSlotId(slot.getId());
         dto.setDayOfWeek(slot.getDayOfWeek());
         dto.setTotalSeats(slot.getTotalSeats());
 
@@ -106,9 +94,6 @@ public class DoctorService {
         return dto;
     }
 
-    /**
-     * Fetch all doctors (summary view).
-     */
     public ResponseEntity<List<ViewDoctorsDto>> viewDoctors() {
         List<Doctor> doctors = doctorRepository.findAll();
         List<ViewDoctorsDto> doctorsList = doctors.stream()
