@@ -37,4 +37,11 @@ public interface DoctorAvailabilityRepository extends JpaRepository<Doctor_avail
             @Param("doctorId") Long doctorId,
             @Param("hospitalId") Long hospitalId
     );
+
+    @Query("""
+       select da.availability
+       from Doctor_availability da
+       where da.slot.id = :slotId
+       """)
+    Boolean getAvailabilityBySlotId(@Param("slotId") Long slotId);
 }
