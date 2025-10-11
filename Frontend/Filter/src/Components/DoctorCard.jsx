@@ -1,13 +1,37 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function DoctorCard({ doctor }) {
+  // support different dto shapes from backend
+  const name = doctor?.name ?? doctor?.doctorName ?? "Unknown Doctor";
+  const rawImage = doctor?.image ?? doctor?.avatar ?? "";
+  const API_BASE = import.meta.env.VITE_API_BASE ?? "http://localhost:8080";
+  const image = rawImage
+    ? rawImage.startsWith("http")
+      ? rawImage
+      : `${API_BASE}/images/${rawImage}`
+    : "https://via.placeholder.com/150";
+  const specialization = doctor?.specialization ?? "";
+  const experience = doctor?.experience ?? doctor?.yearOfExperience ?? 0;
+  const qualifications = doctor?.qualifications ?? doctor?.qualification ?? [];
+  const dispensaries = doctor?.dispensaries ?? doctor?.workPlaces ?? [];
+  const fee = doctor?.consultationFee ?? doctor?.fee ?? 0;
+
+  const navigate = useNavigate();
+
+  const onBook = () => {
+    const id = doctor?.doctorId ?? doctor?.id;
+    if (id) navigate(`/appointment?doctorId=${id}`);
+    else navigate(`/appointment`);
+  };
+
   return (
     <div className="w-full rounded-3xl border border-border bg-card shadow-md p-6 md:p-8">
       <div className="flex flex-col md:flex-row gap-6">
         {/* Avatar */}
         <img
-          src={doctor.image}
-          alt={doctor.name}
+          src={image}
+          alt={name}
           className="w-28 h-28 md:w-32 md:h-32 rounded-2xl object-cover ring-4 ring-white shadow-sm"
         />
 
@@ -16,11 +40,11 @@ export default function DoctorCard({ doctor }) {
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <h3 className="text-2xl md:text-3xl font-bold text-foreground">
-                {doctor.name}
+                {name}
               </h3>
               <span className="mt-2 inline-flex items-center gap-2 rounded-full bg-secondary/15 px-3 py-1 text-sm font-semibold text-secondary-foreground">
                 <span className="inline-block h-2 w-2 rounded-full bg-secondary"></span>
-                {doctor.specialization}
+                {specialization}
               </span>
             </div>
           </div>
@@ -36,8 +60,9 @@ export default function DoctorCard({ doctor }) {
               >
                 <path d="M12 .587l3.668 7.431 8.2 1.193-5.934 5.787 1.401 8.168L12 18.896l-7.335 3.87 1.401-8.168L.132 9.211l8.2-1.193z" />
               </svg>
-              <span className="text-foreground font-medium">{doctor.rating}</span>
-              <span>({doctor.reviews} reviews)</span>
+              {/* rating/reviews may be missing from backend list dto */}
+              <span className="text-foreground font-medium">{doctor.rating ?? "-"}</span>
+              <span>({doctor.reviews ?? 0} reviews)</span>
             </div>
 
             <div className="flex items-center gap-2">
@@ -51,13 +76,13 @@ export default function DoctorCard({ doctor }) {
               >
                 <path d="M12 17l-5 2 1-5L3 9l5-.7L12 3l4 5.3L21 9l-5 5 1 5z" />
               </svg>
-              <span>{doctor.experience} years experience</span>
+              <span>{experience} years experience</span>
             </div>
           </div>
 
           {/* Qualifications */}
           <div className="mt-3 flex flex-wrap gap-2">
-            {doctor.qualifications.map((q) => (
+            {(qualifications || []).map((q) => (
               <span
                 key={q}
                 className="inline-flex items-center rounded-full border border-border bg-muted px-3 py-1 text-sm"
@@ -67,11 +92,11 @@ export default function DoctorCard({ doctor }) {
             ))}
           </div>
 
-          {/* Dispensaries */}
+          {/* Dispensaries / Workplaces */}
           <div className="mt-6 space-y-4">
-            {doctor.dispensaries.map((disp, idx) => (
+            {(dispensaries || []).map((disp, idx) => (
               <div
-                key={`${doctor.id}-${idx}`}
+                key={`${doctor.doctorId ?? doctor.id}-${idx}`}
                 className="rounded-2xl border border-border bg-muted/50 p-4"
               >
                 <div className="flex items-start justify-between gap-4">
@@ -88,14 +113,14 @@ export default function DoctorCard({ doctor }) {
                         <path d="M3 21V7a2 2 0 012-2h3l2-2h4l2 2h3a2 2 0 012 2v14H3z" />
                         <path d="M3 10h18" />
                       </svg>
-                      {disp.name}
+                      {disp.name ?? disp.hospitalName}
                     </div>
-                    <p className="text-sm text-muted-foreground">{disp.location}</p>
+                    <p className="text-sm text-muted-foreground">{disp.location ?? disp.hospitalAddress}</p>
                   </div>
                 </div>
 
                 <div className="mt-3 flex flex-wrap gap-2">
-                  {disp.availableSlots.map((slot) => (
+                  {(disp.availableSlots || []).map((slot) => (
                     <span
                       key={slot}
                       className="inline-flex items-center gap-1 rounded-full bg-emerald-100 text-emerald-700 px-3 py-1 text-sm font-medium"
@@ -124,10 +149,10 @@ export default function DoctorCard({ doctor }) {
             <div>
               <p className="text-sm text-muted-foreground">Consultation Fee</p>
               <p className="text-2xl font-extrabold text-primary">
-                ${doctor.consultationFee}
+                ${fee}
               </p>
             </div>
-            <button className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-primary to-secondary text-white px-5 py-3 font-semibold shadow-md hover:opacity-95 transition">
+            <button onClick={onBook} className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-primary to-secondary text-white px-5 py-3 font-semibold shadow-md hover:opacity-95 transition">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-5 w-5"

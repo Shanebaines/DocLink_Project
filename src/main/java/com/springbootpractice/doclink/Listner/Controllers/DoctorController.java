@@ -1,19 +1,25 @@
 package com.springbootpractice.doclink.Listner.Controllers;
 
+import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.springbootpractice.doclink.Kernal.Service.DoctorService;
 import com.springbootpractice.doclink.Listner.Dto.Response.PagedResponse;
 import com.springbootpractice.doclink.Listner.Dto.Response.ViewDoctorDto;
 import com.springbootpractice.doclink.Listner.Dto.Response.ViewDoctorsDto;
-import lombok.AllArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import lombok.AllArgsConstructor;
 
 @RestController
 @RequestMapping("/doctor")
 @AllArgsConstructor
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:5173"}) // adjust if needed
+@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:5173", "http://localhost:5174"}) // adjust if needed
 public class DoctorController {
     public final DoctorService doctorService;
 

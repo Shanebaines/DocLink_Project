@@ -1,135 +1,117 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import SearchBar from "../Components/SearchBar.jsx";
 import DoctorCard from "../Components/DoctorCard.jsx";
 import { toast } from "sonner";
 
-const mockDoctors = [
-  {
-    id: 1,
-    name: "Dr. Sarah Mitchell",
-    image:
-      "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=400&h=400&fit=crop",
-    specialization: "Cardiologist",
-    experience: 15,
-    rating: 4.8,
-    reviews: 234,
-    qualifications: ["MBBS", "MD Cardiology", "FACC"],
-    dispensaries: [
-      {
-        name: "HealthCare Plus Clinic",
-        location: "123 Medical Center Dr, Downtown",
-        availableSlots: ["09:00 AM", "10:30 AM", "02:00 PM", "04:30 PM"],
-      },
-      {
-        name: "City Heart Hospital",
-        location: "456 Hospital Ave, Uptown",
-        availableSlots: ["11:00 AM", "03:00 PM"],
-      },
-    ],
-    consultationFee: 150,
-  },
-  {
-    id: 2,
-    name: "Dr. James Anderson",
-    image:
-      "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=400&h=400&fit=crop",
-    specialization: "Dermatologist",
-    experience: 12,
-    rating: 4.9,
-    reviews: 189,
-    qualifications: ["MBBS", "MD Dermatology", "FAAD"],
-    dispensaries: [
-      {
-        name: "SkinCare Wellness Center",
-        location: "789 Wellness Blvd, Midtown",
-        availableSlots: ["08:30 AM", "11:00 AM", "01:30 PM", "05:00 PM"],
-      },
-    ],
-    consultationFee: 120,
-  },
-  {
-    id: 3,
-    name: "Dr. Emily Rodriguez",
-    image:
-      "https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=400&h=400&fit=crop",
-    specialization: "Pediatrician",
-    experience: 10,
-    rating: 4.7,
-    reviews: 312,
-    qualifications: ["MBBS", "MD Pediatrics", "FAAP"],
-    dispensaries: [
-      {
-        name: "Children's Health Clinic",
-        location: "321 Kids Care Lane, Suburb",
-        availableSlots: [
-          "09:00 AM",
-          "10:00 AM",
-          "11:00 AM",
-          "02:00 PM",
-          "03:00 PM",
-        ],
-      },
-      {
-        name: "Family Medical Center",
-        location: "654 Family Way, Downtown",
-        availableSlots: ["01:00 PM", "04:00 PM"],
-      },
-    ],
-    consultationFee: 100,
-  },
-  {
-    id: 4,
-    name: "Dr. Michael Chen",
-    image:
-      "https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=400&h=400&fit=crop",
-    specialization: "Orthopedic",
-    experience: 18,
-    rating: 4.9,
-    reviews: 267,
-    qualifications: ["MBBS", "MS Orthopedics", "FAAOS"],
-    dispensaries: [
-      {
-        name: "Joint & Spine Institute",
-        location: "987 Bone Health St, Medical District",
-        availableSlots: ["10:00 AM", "12:00 PM", "03:00 PM"],
-      },
-    ],
-    consultationFee: 180,
-  },
-];
+// Backend base - adjust if your backend runs on a different port or provide VITE_API_BASE in .env
+const API_BASE = import.meta.env.VITE_API_BASE ?? "http://localhost:8080";
 
 export default function Index() {
-  const [doctors] = useState(mockDoctors);
-  const [filteredDoctors, setFilteredDoctors] = useState(mockDoctors);
+  const [doctors, setDoctors] = useState([]); // raw list from backend (ViewDoctorsDto)
+  const [detailedDoctors, setDetailedDoctors] = useState([]); // merged with /doctor/view details
+  const [filteredDoctors, setFilteredDoctors] = useState([]);
+  const [specializations, setSpecializations] = useState(["All Specializations"]);
+  const [loading, setLoading] = useState(false);
 
-  const specializations = useMemo(() => {
-    const unique = Array.from(new Set(doctors.map((d) => d.specialization)));
-    return ["All Specializations", ...unique];
-  }, [doctors]);
+  // helper: fetch list of doctors (non-paged) from backend and then fetch details for each
+  const fetchDoctors = async (params = {}) => {
+    setLoading(true);
+    try {
+      const q = params.q ? `q=${encodeURIComponent(params.q)}` : "";
+      const specialization = params.specialization
+        ? `&specialization=${encodeURIComponent(params.specialization)}`
+        : "";
+      // Use searchByHospitalList which supports q + hospital filtering; backend will handle empty params
+      const url = `${API_BASE}/doctor/searchByHospitalList?${q}${specialization}`;
+
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Failed fetching doctors");
+      const list = await res.json(); // expected List<ViewDoctorsDto>
+
+      setDoctors(list || []);
+
+      // Fetch details for each doctor (view endpoint). Limit concurrent requests for performance.
+      const detailPromises = (list || []).map(async (d) => {
+        try {
+          const r = await fetch(`${API_BASE}/doctor/view?id=${d.doctorId}`);
+          if (!r.ok) return mapListDtoToCard(d, null);
+          const details = await r.json(); // ViewDoctorDto
+          return mapListDtoToCard(d, details);
+        } catch (e) {
+          return mapListDtoToCard(d, null);
+        }
+      });
+
+      const detailed = await Promise.all(detailPromises);
+      setDetailedDoctors(detailed);
+      setFilteredDoctors(detailed);
+      toast.success(`Found ${detailed.length} doctors`);
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to load doctors from server");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // map server DTOs to shapes used by DoctorCard (keep fields safe if details are missing)
+  const mapListDtoToCard = (listDto, detailDto) => {
+    const id = listDto?.doctorId ?? listDto?.doctorId ?? Math.random();
+    const name = listDto?.name ?? detailDto?.doctorName ?? "Unknown";
+    const image = listDto?.image ?? detailDto?.image ?? "https://via.placeholder.com/150";
+    const specialization = listDto?.specialization ?? detailDto?.specialization ?? "";
+
+    const qualifications = detailDto?.qualification
+      ? Array.isArray(detailDto.qualification)
+        ? detailDto.qualification
+        : String(detailDto.qualification).split(",").map((s) => s.trim())
+      : [];
+
+    const experience = detailDto?.yearOfExperience ?? detailDto?.yearOfExperience ?? 0;
+
+    const dispensaries = (detailDto?.workPlaces || []).map((w) => ({
+      name: w.hospitalName,
+      location: w.hospitalAddress,
+      availableSlots: [], // backend does not expose slots in current DTO; keep empty
+    }));
+
+    return {
+      id,
+      doctorId: id,
+      name,
+      image,
+      specialization,
+      qualifications,
+      experience,
+      dispensaries,
+      consultationFee: detailDto?.consultationFee ?? 0,
+    };
+  };
+
+  // load specializations and initial doctors on mount
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const spRes = await fetch(`${API_BASE}/doctor/specializations`);
+        if (spRes.ok) {
+          const s = await spRes.json();
+          setSpecializations(["All Specializations", ...(s || [])]);
+        }
+      } catch (e) {
+        console.warn("Could not load specializations", e);
+      }
+
+      // initial load - empty params to get all doctors
+      fetchDoctors({});
+    };
+
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSearch = (query, specialization) => {
-    let filtered = doctors;
-
-    if (specialization && specialization !== "All Specializations") {
-      filtered = filtered.filter(
-        (doctor) => doctor.specialization === specialization
-      );
-    }
-
-    if ((query || "").trim() !== "") {
-      const q = query.toLowerCase();
-      filtered = filtered.filter(
-        (doctor) =>
-          doctor.name.toLowerCase().includes(q) ||
-          doctor.specialization.toLowerCase().includes(q) ||
-          doctor.dispensaries.some((disp) =>
-            disp.name.toLowerCase().includes(q)
-          )
-      );
-    }
-
-    setFilteredDoctors(filtered);
-    toast.success(`Found ${filtered.length} doctors`);
+    const spec = specialization && specialization !== "All Specializations" ? specialization : undefined;
+    fetchDoctors({ q: query, specialization: spec });
   };
 
   return (
@@ -157,8 +139,7 @@ export default function Index() {
             </span>
           </h1>
           <p className="mt-3 text-muted-foreground max-w-3xl mx-auto">
-            Search from thousands of verified doctors and dispensaries. Book
-            appointments with ease and get the care you deserve.
+            Search from verified doctors and hospitals. Book appointments with ease.
           </p>
         </section>
 
@@ -173,9 +154,13 @@ export default function Index() {
 
           {/* Single column list */}
           <div className="mt-6 flex flex-col gap-6 max-w-3xl mx-auto">
-            {filteredDoctors.map((doctor) => (
-              <DoctorCard key={doctor.id} doctor={doctor} />
-            ))}
+            {loading ? (
+              <div className="p-6 text-center text-muted-foreground">Loading doctors...</div>
+            ) : (
+              filteredDoctors.map((doctor) => (
+                <DoctorCard key={doctor.doctorId ?? doctor.id} doctor={doctor} />
+              ))
+            )}
           </div>
         </div>
       </main>
