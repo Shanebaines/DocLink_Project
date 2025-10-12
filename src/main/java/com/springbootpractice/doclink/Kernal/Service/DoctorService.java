@@ -110,4 +110,10 @@ public class DoctorService {
         dto.setSpecialization(doctor.getSpecialization());
         return dto;
     }
+    public List<ViewDoctorsDto> getDoctorsByHospital(Long hospitalId) {
+        List<Doctor> doctors = doctorsInHospitalRepository.findDoctorsByHospitalId(hospitalId);
+        return doctors.stream()
+                .map(this::toViewDoctorsDto) // We can reuse your existing helper method
+                .collect(Collectors.toList());
+    }
 }

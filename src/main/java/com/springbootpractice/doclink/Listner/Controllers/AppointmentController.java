@@ -1,13 +1,15 @@
 package com.springbootpractice.doclink.Listner.Controllers;
 
+import com.springbootpractice.doclink.Kernal.Entity.Appointment;
 import com.springbootpractice.doclink.Kernal.Service.AppointmentService;
+import com.springbootpractice.doclink.Listner.Dto.Request.CreateAppointmentRequestDto;
+import com.springbootpractice.doclink.Listner.Dto.Request.UpdateStatusRequestDto;
 import com.springbootpractice.doclink.Listner.Dto.Response.viewAppointmentsDto;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -15,6 +17,7 @@ import java.util.List;
 @RequestMapping("appointment")
 @AllArgsConstructor
 public class AppointmentController {
+
     public final AppointmentService appointmentService;
 
     @GetMapping("/viewMyAppointments")
@@ -22,4 +25,35 @@ public class AppointmentController {
         return appointmentService.viewAppointments(id);
     }
 
+    @PostMapping("/book")
+    public ResponseEntity<?> bookAppointment(@Valid @RequestBody CreateAppointmentRequestDto requestDto) {
+        try {
+            Appointment savedAppointment = appointmentService.createAppointment(requestDto);
+            return new ResponseEntity<>("Appointment booked successfully with ID: " + savedAppointment.getAppointmentId(), HttpStatus.CREATED);
+        } catch (IllegalArgumentException e) {
+            // Catches errors like "Patient not found"
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (IllegalStateException e) {
+            // Catches "Seat is already taken"
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected server error occurred.");
+        }
+    }
+
+    @PatchMapping("/updateStatus")
+    public ResponseEntity<?> updateStatus(@RequestParam Long id, @Valid @RequestBody UpdateStatusRequestDto requestDto) {
+        try {
+            Appointment updatedAppointment = appointmentService.updateAppointmentStatus(id, requestDto);
+            return ResponseEntity.ok("Status for appointment " + id + " updated to " + updatedAppointment.getStatus());
+        } catch (IllegalArgumentException e) {
+            // Catches "Appointment not found"
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (IllegalStateException e) {
+            // Catches "Cannot update a completed appointment"
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected server error occurred.");
+        }
+    }
 }

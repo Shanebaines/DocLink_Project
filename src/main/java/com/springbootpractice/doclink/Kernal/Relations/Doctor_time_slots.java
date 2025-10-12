@@ -71,6 +71,11 @@ public class Doctor_time_slots {
     @Min(1)
     private Integer totalSeats;
 
+    @Column(name = "availability", nullable = false)
+    @NotNull
+    @Builder.Default
+    private Boolean availability = Boolean.TRUE;
+
     @Version
     private Long version;
 

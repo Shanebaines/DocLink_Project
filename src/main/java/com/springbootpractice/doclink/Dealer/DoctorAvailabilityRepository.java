@@ -10,7 +10,7 @@ public interface DoctorAvailabilityRepository extends JpaRepository<Doctor_avail
     @Query("""
        select da.availability
        from Doctor_availability da
-       where da.slot.id = :slotId
+       where da.id = :slotId
        """)
     Boolean getAvailabilityBySlotId(@Param("slotId") Long slotId);
 }
