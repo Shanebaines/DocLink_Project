@@ -4,8 +4,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDate;
 
-import com.springbootpractice.doclink.Kernal.Enums.GenderType;
-
 @Entity
 @Table(name = "patients",
         uniqueConstraints = @UniqueConstraint(name = "unique_patient_user", columnNames = "user_id"),

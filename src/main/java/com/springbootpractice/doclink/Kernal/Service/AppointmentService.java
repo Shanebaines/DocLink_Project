@@ -1,7 +1,6 @@
 package com.springbootpractice.doclink.Kernal.Service;
 
 import com.springbootpractice.doclink.Dealer.AppointmentRepository;
-import com.springbootpractice.doclink.Dealer.DoctorTimeSlotRepository;
 import com.springbootpractice.doclink.Kernal.Entity.Appointment;
 import com.springbootpractice.doclink.Listner.Dto.Response.viewAppointmentsDto;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +18,6 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class AppointmentService {
     public final AppointmentRepository appointmentRepository;
-    public final DoctorTimeSlotRepository doctorTimeSlotsRepository;
 
     public ResponseEntity<List<viewAppointmentsDto>> viewAppointments(Long id) {
         List<Appointment> optionalAppointment = appointmentRepository.findAllByPatient_PatientId(id);

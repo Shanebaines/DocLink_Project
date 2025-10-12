@@ -12,9 +12,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -29,7 +31,7 @@ public class ScheduleService {
         if (timeSlot == null) {
             return ResponseEntity.notFound().build();
         }
-        List<Appointment> appointmentList = appointmentRepository.findAllByTimeSlot_IdAndAppointmentDate(slotId, date);;
+        List<Appointment> appointmentList = appointmentRepository.findAllByTimeSlot_IdAndAppointmentDate(slotId, date);
         Integer numberOfSeats = appointmentList.size();
         Integer totalSeats = timeSlot.getTotalSeats();
 
@@ -54,5 +56,26 @@ public class ScheduleService {
         seatsDto.setSeatNumber(appointment.getSeatNumber());
         seatsDto.setStatus(appointment.getStatus());
         return seatsDto;
+    }
+
+    //if can, use calendar API for find holy days and others
+
+    public ResponseEntity<List<LocalDate>> upcomingDates(Long slotId) {
+        Doctor_time_slots slots = doctorTimeSlotRepository.findById(slotId)
+                .orElse(null);
+
+        if (slots == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        DayOfWeek dayOfWeek = slots.getDayOfWeek();
+        LocalDate today = LocalDate.now();
+
+        List<LocalDate> upcomingDates = Stream.iterate(today, date -> date.plusDays(1))
+                .limit(4 * 7) // 4 weeks = 28 days
+                .filter(date -> date.getDayOfWeek() == dayOfWeek)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(upcomingDates);
     }
 }

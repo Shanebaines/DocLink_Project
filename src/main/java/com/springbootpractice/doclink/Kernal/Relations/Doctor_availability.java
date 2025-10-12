@@ -92,34 +92,4 @@ public class Doctor_availability {
             throw new IllegalArgumentException("effectiveUntil must be after or equal to effectiveFrom");
     }
 
-    public boolean isAvailableOn(LocalDateTime dateTime) {
-        if (Boolean.FALSE.equals(availability) || slot == null) return false;
-
-        boolean dayMatches = dateTime.getDayOfWeek().equals(slot.getDayOfWeek());
-        boolean timeInRange = !dateTime.toLocalTime().isBefore(slot.getStartTime())
-                && !dateTime.toLocalTime().isAfter(slot.getEndTime());
-
-        boolean withinEffective = true;
-        if (effectiveFrom != null && dateTime.isBefore(effectiveFrom)) withinEffective = false;
-        if (effectiveUntil != null && dateTime.isAfter(effectiveUntil)) withinEffective = false;
-
-        return dayMatches && timeInRange && withinEffective;
-    }
-
-    // Delegate helpers
-    public java.time.DayOfWeek getDayOfWeek() {
-        return slot != null ? slot.getDayOfWeek() : null;
-    }
-
-    public java.time.LocalTime getStartTime() {
-        return slot != null ? slot.getStartTime() : null;
-    }
-
-    public java.time.LocalTime getEndTime() {
-        return slot != null ? slot.getEndTime() : null;
-    }
-
-    public Integer getTotalSeats() {
-        return slot != null ? slot.getTotalSeats() : null;
-    }
 }

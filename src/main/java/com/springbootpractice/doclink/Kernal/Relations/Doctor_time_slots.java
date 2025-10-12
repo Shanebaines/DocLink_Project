@@ -11,7 +11,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.DayOfWeek;
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
@@ -90,10 +89,5 @@ public class Doctor_time_slots {
             throw new IllegalArgumentException("endTime must be strictly after startTime");
         if (totalSeats != null && totalSeats <= 0)
             throw new IllegalArgumentException("totalSeats must be > 0");
-    }
-
-    public Duration getDuration() {
-        if (startTime == null || endTime == null) return Duration.ZERO;
-        return Duration.between(startTime, endTime);
     }
 }

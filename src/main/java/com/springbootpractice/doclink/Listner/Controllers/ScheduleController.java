@@ -8,12 +8,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @RestController
 @RequestMapping("/schedule")
 @AllArgsConstructor
 public class ScheduleController {
     private final ScheduleService scheduleService;
+
+    @GetMapping("/{slotId}/dates")
+    public ResponseEntity<List<LocalDate>> upcomingDates(@PathVariable Long slotId) {
+        return scheduleService.upcomingDates(slotId);
+    }
 
     @GetMapping("/{slotId}/viewSlot")
     public ResponseEntity<ViewSlotDto> viewSlot(
