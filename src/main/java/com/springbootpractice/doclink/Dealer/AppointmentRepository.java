@@ -10,9 +10,9 @@ import java.util.List;
 @Repository
 public interface AppointmentRepository extends JpaRepository<Appointment, Long> {
 
-    // Method for the "My Appointments" page
+    // Method for the "My Appointments" page.
     List<Appointment> findByPatientPatientIdOrderByAppointmentDateDesc(Long patientId);
 
-    // Method for the ScheduleService to find booked seats
+    // Method for the ScheduleService to find booked seats.
     List<Appointment> findAllByTimeSlot_IdAndAppointmentDate(Long slotId, LocalDate date);
 }
