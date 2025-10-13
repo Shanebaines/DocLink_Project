@@ -1,9 +1,10 @@
 import React from "react";
+import DoctorLocationMap from "./pages/DoctorLocationMap";
 
 export default function App() {
   return (
     <>
-      <h1>Doctor Management System</h1>
+      <DoctorLocationMap />
     </>
   );
 }

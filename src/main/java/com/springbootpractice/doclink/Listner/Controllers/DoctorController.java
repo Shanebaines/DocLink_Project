@@ -3,11 +3,7 @@ package com.springbootpractice.doclink.Listner.Controllers;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.springbootpractice.doclink.Kernal.Service.DoctorService;
 import com.springbootpractice.doclink.Listner.Dto.Response.PagedResponse;
@@ -23,11 +19,10 @@ import lombok.AllArgsConstructor;
 public class DoctorController {
     public final DoctorService doctorService;
 
-    @GetMapping("/view")
-    public ResponseEntity<ViewDoctorDto> viewDoctor(@RequestParam Long id) {
-        return doctorService.viewDoctor(id);
+    @GetMapping("/view/{id}")
+    public ResponseEntity<ViewDoctorDto> viewDoctor(@PathVariable Integer id) {
+        return doctorService.viewDoctor(Long.valueOf(id));
     }
-
     @GetMapping("/viewAll")
     public ResponseEntity<List<ViewDoctorsDto>> viewDoctors() {
         return doctorService.viewDoctors();

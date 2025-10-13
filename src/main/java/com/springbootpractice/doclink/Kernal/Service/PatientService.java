@@ -3,6 +3,7 @@ package com.springbootpractice.doclink.Kernal.Service;
 import com.springbootpractice.doclink.Dealer.PatientRepository;
 import com.springbootpractice.doclink.Kernal.Entity.Patient;
 import com.springbootpractice.doclink.Listner.Dto.Response.ViewPatientDto;
+import com.springbootpractice.doclink.Listner.Dto.Response.ViewPatientsDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -37,4 +39,29 @@ public class PatientService {
 
         return ResponseEntity.ok(dto);
     }
+
+
+    public ResponseEntity<List<ViewPatientsDto>> viewPatients() {
+        List<Patient> patients = patientRepository.findAll();
+
+        if (patients.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
+        List<ViewPatientsDto> patientDtos = patients.stream()
+                .map(patient -> {
+                    ViewPatientsDto dto = new ViewPatientsDto();
+                    dto.setPatientId(patient.getPatientId());
+                    dto.setUserId(patient.getUser().getUserId());
+                    dto.setFirstName(patient.getUser().getFirstName());
+                    dto.setLastName(patient.getUser().getLastName());
+                    dto.setAddress(patient.getUser().getAddress());
+                    dto.setGpsLocation(patient.getUser().getGpsLocation());
+                    return dto;
+                })
+                .toList();
+
+        return ResponseEntity.ok(patientDtos);
+    }
+
 }

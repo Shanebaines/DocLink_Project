@@ -11,8 +11,11 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.DayOfWeek;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+
+
 
 @Entity
 @Table(
@@ -37,7 +40,6 @@ import java.time.LocalTime;
 @ToString(exclude = {"doctor", "hospital"})
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Doctor_time_slots {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
@@ -71,11 +73,6 @@ public class Doctor_time_slots {
     @Min(1)
     private Integer totalSeats;
 
-    @Column(name = "availability", nullable = false)
-    @NotNull
-    @Builder.Default
-    private Boolean availability = Boolean.TRUE;
-
     @Version
     private Long version;
 
@@ -95,4 +92,10 @@ public class Doctor_time_slots {
         if (totalSeats != null && totalSeats <= 0)
             throw new IllegalArgumentException("totalSeats must be > 0");
     }
+
+    public Duration getDuration() {
+        if (startTime == null || endTime == null) return Duration.ZERO;
+        return Duration.between(startTime, endTime);
+    }
+
 }
