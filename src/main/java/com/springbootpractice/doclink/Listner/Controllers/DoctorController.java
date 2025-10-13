@@ -27,27 +27,9 @@ public class DoctorController {
         return doctorService.viewDoctors();
     }
 
-    // Paged search (name or specialization)
-    @GetMapping("/search")
-    public ResponseEntity<PagedResponse<ViewDoctorsDto>> searchDoctors(
-            @RequestParam(required = false) String q,
-            @RequestParam(required = false) String specialization,
-            @RequestParam(required = false) String district, // ignored in current implementation
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "12") int size) {
-        return doctorService.searchDoctors(q, specialization, district, page, size);
+    @GetMapping("/viewByHospital")
+    public ResponseEntity<List<ViewDoctorsDto>> getDoctorsByHospital(@RequestParam Long hospitalId) {
+        return ResponseEntity.ok(doctorService.getDoctorsByHospital(hospitalId));
     }
 
-    // Non-paged search (returns same shape as /viewAll)
-    @GetMapping("/searchList")
-    public ResponseEntity<List<ViewDoctorsDto>> searchDoctorsList(
-            @RequestParam(required = false) String q,
-            @RequestParam(required = false) String specialization) {
-        return doctorService.searchDoctorsList(q, specialization);
-    }
-
-    @GetMapping("/specializations")
-    public ResponseEntity<List<String>> specializations() {
-        return doctorService.getSpecializations();
-    }
 }

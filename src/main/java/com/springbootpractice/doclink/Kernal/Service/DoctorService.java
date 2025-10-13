@@ -1,38 +1,42 @@
 package com.springbootpractice.doclink.Kernal.Service;
-import com.springbootpractice.doclink.Dealer.DoctorAvailabilityRepository;
 import com.springbootpractice.doclink.Dealer.DoctorRepository;
+import com.springbootpractice.doclink.Dealer.DoctorsInHospitalRepository;
+import com.springbootpractice.doclink.Dealer.DoctorTimeSlotRepository;
 import com.springbootpractice.doclink.Kernal.Entity.Doctor;
 import com.springbootpractice.doclink.Kernal.Entity.Hospital;
-import com.springbootpractice.doclink.Kernal.Relations.Doctor_availability;
-import com.springbootpractice.doclink.Listner.Dto.Response.PagedResponse;
+import com.springbootpractice.doclink.Kernal.Relations.Doctor_time_slots;
+import com.springbootpractice.doclink.Kernal.Relations.Doctors_in_Hospital;
+import com.springbootpractice.doclink.Listner.Dto.Response.AvailableSlotsDto;
 import com.springbootpractice.doclink.Listner.Dto.Response.ViewDoctorDto;
 import com.springbootpractice.doclink.Listner.Dto.Response.ViewDoctorsDto;
 import com.springbootpractice.doclink.Listner.Dto.Response.WorkPLaceDto;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Slf4j
+@Transactional(readOnly = true)
 public class DoctorService {
     private final DoctorRepository doctorRepository;
-    private final DoctorAvailabilityRepository doctorAvailabilityRepository;
+    private final DoctorsInHospitalRepository doctorsInHospitalRepository;
+    private final DoctorTimeSlotRepository doctorTimeSlotRepository;
 
-    @Transactional(readOnly = true)
     public ResponseEntity<ViewDoctorDto> viewDoctor(Long id) {
-        Doctor doctor = doctorRepository.findById(id).orElse(null);
-        if (doctor == null) {
+        Optional<Doctor> optDoctor = doctorRepository.findById(id);
+        if (optDoctor.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
+        Doctor doctor = optDoctor.get();
 
         ViewDoctorDto dto = new ViewDoctorDto();
         dto.setImage(doctor.getImage());
@@ -45,52 +49,57 @@ public class DoctorService {
         dto.setEmail(doctor.getUser().getEmail());
         dto.setAddress(doctor.getUser().getAddress());
 
-        List<Doctor_availability> availabilities =
-                doctorAvailabilityRepository.findAllByDoctorIdWithHospital(id);
+        List<Doctors_in_Hospital> places = doctorsInHospitalRepository.findAllByDoctorIdWithHospital(id);
 
-        List<WorkPLaceDto> workPlaces = availabilities.stream()
-                .map(this::toWorkPlaceDto)
+        List<WorkPLaceDto> workPlaces = places.stream()
+                .map(dih -> toWorkPlaceDto(dih, id))
                 .collect(Collectors.toList());
 
         dto.setWorkPlaces(workPlaces);
-
         return ResponseEntity.ok(dto);
     }
 
-    private WorkPLaceDto toWorkPlaceDto(Doctor_availability da) {
-        WorkPLaceDto w = new WorkPLaceDto();
-        Hospital h = da.getHospital();
+    private WorkPLaceDto toWorkPlaceDto(Doctors_in_Hospital dih, Long doctorId) {
+        Hospital hospital = dih.getHospital();
 
-        w.setHospitalId(h.getHospitalId());
-        w.setHospitalName(h.getHospitalName());
-        w.setHospitalAddress(h.getAddress());
-        w.setPhoneNumber(h.getPhoneNumber());
+        WorkPLaceDto workplaceDto = new WorkPLaceDto();
+        workplaceDto.setHospitalId(hospital.getHospitalId());
+        workplaceDto.setHospitalName(hospital.getHospitalName());
+        workplaceDto.setGpsLocation(hospital.getGpsLocation());
+        workplaceDto.setHospitalAddress(hospital.getAddress());
+        workplaceDto.setPhoneNumber(hospital.getPhoneNumber());
 
-        w.setAvailableSeats(null);
-        w.setTotalSeats(da.getTotalSeats());
+        List<Doctor_time_slots> timeSlots =
+                doctorTimeSlotRepository.findByDoctorDoctorIdAndHospitalHospitalIdOrderByDayOfWeekAscStartTimeAsc(
+                        doctorId, hospital.getHospitalId());
 
-        w.setTimePeriod(formatTimePeriod(da.getStartTime(), da.getEndTime()));
-        w.setAvailability(Boolean.TRUE.equals(da.getAvailability()) ? "AVAILABLE" : "UNAVAILABLE");
-        return w;
+        List<AvailableSlotsDto> slotDtos = timeSlots.stream()
+                .map(this::toAvailableSlotDto)
+                .collect(Collectors.toList());
+
+        workplaceDto.setAvailableSlots(slotDtos);
+        return workplaceDto;
     }
 
-    private String formatTimePeriod(LocalDateTime start, LocalDateTime end) {
+    private AvailableSlotsDto toAvailableSlotDto(Doctor_time_slots slot) {
+        AvailableSlotsDto dto = new AvailableSlotsDto();
+        dto.setSlotId(slot.getId());
+        dto.setDayOfWeek(slot.getDayOfWeek());
+        dto.setTotalSeats(slot.getTotalSeats());
+
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("HH:mm");
-        String s = start != null ? start.format(fmt) : "";
-        String e = end != null ? end.format(fmt) : "";
-        if (s.isEmpty() && e.isEmpty()) return "";
-        if (s.isEmpty()) return "- " + e;
-        if (e.isEmpty()) return s + " -";
-        return s + " - " + e;
+        dto.setTimePeriod(slot.getStartTime().format(fmt) + " - " + slot.getEndTime().format(fmt));
+
+        return dto;
     }
 
     @Transactional(readOnly = true)
     public ResponseEntity<List<ViewDoctorsDto>> viewDoctors() {
         List<Doctor> doctors = doctorRepository.findAll();
-        List<ViewDoctorsDto> doctorsAvailable = doctors.stream()
+        List<ViewDoctorsDto> doctorsList = doctors.stream()
                 .map(this::toViewDoctorsDto)
                 .collect(Collectors.toList());
-        return ResponseEntity.ok(doctorsAvailable);
+        return ResponseEntity.ok(doctorsList);
     }
 
     private ViewDoctorsDto toViewDoctorsDto(Doctor doctor) {
@@ -101,48 +110,10 @@ public class DoctorService {
         dto.setSpecialization(doctor.getSpecialization());
         return dto;
     }
-
-    // Paged search by name or specialization
-    @Transactional(readOnly = true)
-    public ResponseEntity<PagedResponse<ViewDoctorsDto>> searchDoctors(
-            String q, String specialization, String district, int page, int size) {
-
-        // district intentionally ignored (your request was name or specialization)
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "doctorId"));
-        Page<Doctor> result = doctorRepository.searchByNameOrSpecialization(
-                emptyToNull(q), emptyToNull(specialization), pageable);
-
-        List<ViewDoctorsDto> content = result.getContent().stream()
-                .map(this::toViewDoctorsDto)
+    public List<ViewDoctorsDto> getDoctorsByHospital(Long hospitalId) {
+        List<Doctor> doctors = doctorsInHospitalRepository.findDoctorsByHospitalId(hospitalId);
+        return doctors.stream()
+                .map(this::toViewDoctorsDto) // We can reuse your existing helper method
                 .collect(Collectors.toList());
-
-        PagedResponse<ViewDoctorsDto> response = new PagedResponse<>(
-                content,
-                result.getNumber(),
-                result.getSize(),
-                result.getTotalElements(),
-                result.getTotalPages()
-        );
-        return ResponseEntity.ok(response);
-    }
-
-    // Non-paged variant (returns same shape as /viewAll)
-    @Transactional(readOnly = true)
-    public ResponseEntity<List<ViewDoctorsDto>> searchDoctorsList(String q, String specialization) {
-        List<Doctor> docs = doctorRepository.searchListByNameOrSpecialization(
-                emptyToNull(q), emptyToNull(specialization));
-        List<ViewDoctorsDto> out = docs.stream()
-                .map(this::toViewDoctorsDto)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(out);
-    }
-
-    @Transactional(readOnly = true)
-    public ResponseEntity<List<String>> getSpecializations() {
-        return ResponseEntity.ok(doctorRepository.findAllSpecializations());
-    }
-
-    private String emptyToNull(String s) {
-        return (s == null || s.trim().isEmpty()) ? null : s.trim();
     }
 }
