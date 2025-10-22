@@ -1,0 +1,8 @@
+.header-bar{background:linear-gradient(90deg,#1e90ff,#11998e);padding:14px 0;box-shadow:0 4px 18px rgba(2,6,23,0.08)}
+.header-container{display:flex;align-items:center;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:12px;color:#e6fffb}
+.brand-logo{width:34px;height:34px;display:flex;align-items:center;justify-content:center}
+.brand-text{font-weight:800;font-size:20px;letter-spacing:1px}
+.header-actions{display:flex;align-items:center;gap:12px}
+.header-link{color:rgba(255,255,255,0.95);text-decoration:none;font-weight:600;padding:8px 12px;border-radius:8px;background:rgba(255,255,255,0.05)}
+.header-link:hover{background:rgba(255,255,255,0.12)}
