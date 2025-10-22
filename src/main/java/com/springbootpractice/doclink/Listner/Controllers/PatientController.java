@@ -15,13 +15,13 @@ import java.util.List;
 public class PatientController {
     public final PatientService patientService;
 
-    @GetMapping("/viewPatient/{id}")
-    public ResponseEntity<ViewPatientDto> viewPatient(@PathVariable Long id) {
+    @GetMapping("/viewPatient") //tested
+    public ResponseEntity<ViewPatientDto> viewPatient(@RequestParam Long id) {
         return patientService.viewPatient(id);
     }
 
 
-    @GetMapping("/viewAll")
+    @GetMapping("/viewAll") //tested
     public ResponseEntity<List<ViewPatientsDto>> viewPatients() {
         return patientService.viewPatients();
     }

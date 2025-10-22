@@ -16,12 +16,12 @@ import java.util.List;
 public class ScheduleController {
     private final ScheduleService scheduleService;
 
-    @GetMapping("/{slotId}/dates")
+    @GetMapping("/{slotId}/dates") //tested
     public ResponseEntity<List<LocalDate>> upcomingDates(@PathVariable Long slotId) {
         return scheduleService.upcomingDates(slotId);
     }
 
-    @GetMapping("/{slotId}/viewSlot")
+    @GetMapping("/{slotId}/viewSlot") //tested
     public ResponseEntity<ViewSlotDto> viewSlot(
             @PathVariable Long slotId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)LocalDate date) {

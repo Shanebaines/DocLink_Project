@@ -19,17 +19,17 @@ import lombok.AllArgsConstructor;
 public class DoctorController {
     public final DoctorService doctorService;
 
-    @GetMapping("/view/{id}")
-    public ResponseEntity<ViewDoctorDto> viewDoctor(@PathVariable Integer id) {
+    @GetMapping("/view") //tested
+    public ResponseEntity<ViewDoctorDto> viewDoctor(@RequestParam Integer id) {
         return doctorService.viewDoctor(Long.valueOf(id));
     }
-    @GetMapping("/viewAll")
+    @GetMapping("/viewAll") //tested
     public ResponseEntity<List<ViewDoctorsDto>> viewDoctors() {
         return doctorService.viewDoctors();
     }
 
     // Existing: paged search (name or specialization)
-    @GetMapping("/search")
+    @GetMapping("/search") //not done
     public ResponseEntity<PagedResponse<ViewDoctorsDto>> searchDoctors(
             @RequestParam(required = false) String q,
             @RequestParam(required = false) String specialization,
@@ -40,7 +40,7 @@ public class DoctorController {
     }
 
     // Existing: non-paged search (returns same shape as /viewAll)
-    @GetMapping("/searchList")
+    @GetMapping("/searchList") //not done
     public ResponseEntity<List<ViewDoctorsDto>> searchDoctorsList(
             @RequestParam(required = false) String q,
             @RequestParam(required = false) String specialization) {
@@ -48,7 +48,7 @@ public class DoctorController {
     }
 
     // NEW: paged search + hospital filters
-    @GetMapping("/searchByHospital")
+    @GetMapping("/searchByHospital") //not done
     public ResponseEntity<PagedResponse<ViewDoctorsDto>> searchDoctorsByHospital(
             @RequestParam(required = false) String q,
             @RequestParam(required = false) String specialization,

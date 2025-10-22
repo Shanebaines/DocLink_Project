@@ -20,12 +20,12 @@ public class AppointmentController {
 
     public final AppointmentService appointmentService;
 
-    @GetMapping("/viewMyAppointments")
+    @GetMapping("/viewMyAppointments") //tested
     public ResponseEntity<List<viewAppointmentsDto>> viewAppointments(@RequestParam Long id){
         return appointmentService.viewAppointments(id);
     }
 
-    @PostMapping("/book")
+    @PostMapping("/book") //tested
     public ResponseEntity<?> bookAppointment(@Valid @RequestBody CreateAppointmentRequestDto requestDto) {
         try {
             Appointment savedAppointment = appointmentService.createAppointment(requestDto);
@@ -41,7 +41,7 @@ public class AppointmentController {
         }
     }
 
-    @PatchMapping("/updateStatus")
+    @PatchMapping("/updateStatus") //admin API
     public ResponseEntity<?> updateStatus(@RequestParam Long id, @Valid @RequestBody UpdateStatusRequestDto requestDto) {
         try {
             Appointment updatedAppointment = appointmentService.updateAppointmentStatus(id, requestDto);
@@ -57,4 +57,3 @@ public class AppointmentController {
         }
     }
 }
-//
