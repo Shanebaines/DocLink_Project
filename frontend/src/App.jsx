@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import DoctorLocationMap from "./pages/DoctorLocationMap";
 import PatientLanding from "./pages/PatientLanding";
 import PatientLogin from "./pages/PatientLogin";
+import BookingPage from "./pages/BookingPage";
 
 export default function App() {
   return (
@@ -16,6 +17,8 @@ export default function App() {
 
         {/* Simple patient login page */}
         <Route path="/login" element={<PatientLogin />} />
+  {/* Booking page */}
+  <Route path="/booking" element={<BookingPage />} />
 
       </Routes>
     </BrowserRouter>

@@ -97,8 +97,17 @@
 .appointments-section { background: linear-gradient(180deg,#f7fbfe 0,#f2f9ff 100%); padding: 48px 0 80px; margin-top: 12px; }
 .appointments-title { text-align:center; font-size:32px; margin: 0; font-weight:800; }
 .appointments-sub { text-align:center; color:#64748b; margin-top:8px; }
-.appointment-grid { margin-top: 28px; display:grid; gap:20px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
-.appointment-card { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 6px 20px rgba(2,6,23,0.04); }
+.appointment-grid { margin-top: 28px; display:grid; gap:20px; grid-template-columns: 1fr; }
+.appointment-card {
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(2,6,23,0.04);
+  width: 100%;
+  border: 1px solid transparent;
+  -webkit-border-image: linear-gradient(90deg,#1e90ff,#11998e) 1;
+  border-image: linear-gradient(90deg,#1e90ff,#11998e) 1;
+}
 .appointment-doctor { margin: 0 0 6px; font-size: 18px; font-weight:700; }
 .appointment-hospital { margin: 0 0 8px; color:#64748b; }
 .appointment-meta { display:flex; gap:12px; color:#0f172a; margin-bottom: 12px; }

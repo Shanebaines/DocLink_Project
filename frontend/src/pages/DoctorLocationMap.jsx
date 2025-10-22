@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation, useParams, useNavigate } from "react-router-dom";
 import "./DoctorLocationMap.css";
+import DoctorDetails from '../components/DoctorDetails';
 
 function DoctorLocationMap() {
   const params = useParams();
@@ -11,6 +12,7 @@ function DoctorLocationMap() {
   const qs = new URLSearchParams(location.search);
   const routeIdFromQuery = qs.get('id');
   const routeDoctorId = routeIdFromPath || routeIdFromQuery || null;
+  const navigate = useNavigate();
 
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
@@ -176,7 +178,7 @@ function DoctorLocationMap() {
       try {
         setLoadingDoctorDetails(true);
         const response = await fetch(
-          `http://localhost:8080/doctor/view/${selectedDoctorFromDropdown.doctorId}`
+          `http://localhost:8080/doctor/view?id=${selectedDoctorFromDropdown.doctorId}`
         );
         if (!response.ok) {
           throw new Error("Failed to fetch doctor details");
@@ -448,10 +450,24 @@ function DoctorLocationMap() {
             <h2 className="selection-title">Doctor Selected</h2>
             <p className="selection-subtitle">You selected a doctor from the landing page. Patient selection is taken from your account where possible.</p>
             {selectedDoctorFromDropdown?.name && (
-              <div style={{ marginTop: 12 }}>
-                <strong>Doctor:</strong> Dr. {selectedDoctorFromDropdown.name}
-              </div>
-            )}
+                <div style={{ marginTop: 12 }}>
+                  {loadingDoctorDetails ? (
+                    <div>Loading doctor profile...</div>
+                  ) : doctorDetails ? (
+                    <DoctorDetails
+                      doctor={doctorDetails}
+                      workplaces={doctorWorkplaces}
+                      expandedWorkplaces={expandedWorkplaces}
+                      toggleWorkplaceExpansion={toggleWorkplaceExpansion}
+                      selectedPatient={selectedPatient}
+                      viewMode={viewMode}
+                      radius={radius}
+                    />
+                  ) : (
+                    <div><strong>Doctor:</strong> Dr. {selectedDoctorFromDropdown.name}</div>
+                  )}
+                </div>
+              )}
             {selectedPatient && (
               <div style={{ marginTop: 8 }}>
                 <strong>Patient:</strong> {selectedPatient.firstName} {selectedPatient.lastName}
@@ -513,30 +529,15 @@ function DoctorLocationMap() {
 
             {/* Doctor Details Display */}
             {doctorDetails && !loadingDoctorDetails && (
-              <div className="doctor-details-card">
-                <div className="details-grid">
-                  <div className="details-column">
-                    <h3 className="doctor-details-name">{doctorDetails.doctorName}</h3>
-                    <p className="doctor-details-specialty">{doctorDetails.specialization}</p>
-                    <p className="doctor-details-text">{doctorDetails.qualification}</p>
-                    <p className="doctor-details-text">Experience: {doctorDetails.yearOfExperience} years</p>
-                  </div>
-                  <div className="details-column">
-                    <p className="doctor-details-contact">
-                      <span style={{ marginRight: 6 }}>📞</span>{doctorDetails.phoneNumber}
-                    </p>
-                    <p className="doctor-details-contact">
-                      📧 {doctorDetails.email}
-                    </p>
-                    <p className="doctor-details-contact">
-                      <span style={{ marginRight: 6 }}>📍</span>{doctorDetails.address}
-                    </p>
-                    <p className="doctor-details-contact">
-                      License: {doctorDetails.licenseNumber}
-                    </p>
-                  </div>
-                </div>
-              </div>
+              <DoctorDetails
+                doctor={doctorDetails}
+                workplaces={doctorWorkplaces}
+                expandedWorkplaces={expandedWorkplaces}
+                toggleWorkplaceExpansion={toggleWorkplaceExpansion}
+                selectedPatient={selectedPatient}
+                viewMode={viewMode}
+                radius={radius}
+              />
             )}
 
             {/* Patient Details Display */}
@@ -784,8 +785,12 @@ function DoctorLocationMap() {
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  // TODO: Navigate to booking page
-                                  console.log('Book slot:', slot.slotId);
+                                  try {
+                                    const q = new URLSearchParams({ doctorId: routeDoctorId || (selectedDoctor && selectedDoctor.doctorId) || '' , hospitalId: workplace.hospitalId, slotId: slot.slotId });
+                                    navigate(`/booking?${q.toString()}`);
+                                  } catch (err) {
+                                    console.error('Failed to navigate to booking page', err);
+                                  }
                                 }}
                                 style={{
                                   marginTop: '4px',
