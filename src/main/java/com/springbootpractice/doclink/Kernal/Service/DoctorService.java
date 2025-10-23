@@ -48,14 +48,17 @@ public class DoctorService {
         dto.setEmail(doctor.getUser().getEmail());
         dto.setAddress(doctor.getUser().getAddress());
 
-        List<Doctors_in_Hospital> places = doctorsInHospitalRepository.findAllByDoctorIdWithHospital(id);
-
-        List<WorkPLaceDto> workPlaces = places.stream()
-                .map(dih -> toWorkPlaceDto(dih, id))
-                .collect(Collectors.toList());
+        List<WorkPLaceDto> workPlaces = viewWorkPlaces(id).getBody();
 
         dto.setWorkPlaces(workPlaces);
         return ResponseEntity.ok(dto);
+    }
+    public ResponseEntity<List<WorkPLaceDto>> viewWorkPlaces(Long id) {
+        List<Doctors_in_Hospital> places = doctorsInHospitalRepository.findAllByDoctorIdWithHospital(Long.valueOf(id));
+        List<WorkPLaceDto> workPlaces = places.stream()
+                .map(dih -> toWorkPlaceDto(dih, id))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(workPlaces);
     }
 
     private WorkPLaceDto toWorkPlaceDto(Doctors_in_Hospital dih, Long doctorId) {

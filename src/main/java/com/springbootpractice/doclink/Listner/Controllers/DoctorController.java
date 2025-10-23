@@ -2,6 +2,7 @@ package com.springbootpractice.doclink.Listner.Controllers;
 
 import java.util.List;
 
+import com.springbootpractice.doclink.Listner.Dto.Response.WorkPLaceDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,6 +27,11 @@ public class DoctorController {
     @GetMapping("/viewAll") //tested
     public ResponseEntity<List<ViewDoctorsDto>> viewDoctors() {
         return doctorService.viewDoctors();
+    }
+
+    @GetMapping("/viewPlaces")
+    public ResponseEntity<List<WorkPLaceDto>> viewWorkPlaces(@RequestParam Long id) {
+        return doctorService.viewWorkPlaces(id);
     }
 
     // Existing: paged search (name or specialization)
