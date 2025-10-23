@@ -51,17 +51,17 @@ export default function SeatGrid({ slot, slotId, date, selectedSeat, onSelectSea
 
   return (
     <div>
-      <div className="seat-legend" style={{ display: 'flex', gap: 12, marginBottom: 12, alignItems: 'center' }}>
+      <div className="seat-legend" style={{ display: 'flex', gap: 16, marginBottom: 12, alignItems: 'center' }}>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <div className="seat" style={{ width: 28, height: 28, padding: 6, borderRadius: 6 }}></div>
+          <span className="seat-legend-square seat" aria-hidden="true"></span>
           <small>Available</small>
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <div className="seat booked" style={{ width: 28, height: 28, padding: 6, borderRadius: 6 }}></div>
+          <span className="seat-legend-square seat booked" aria-hidden="true"></span>
           <small>Booked</small>
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <div className="seat selected" style={{ width: 28, height: 28, padding: 6, borderRadius: 6 }}></div>
+          <span className="seat-legend-square seat selected" aria-hidden="true"></span>
           <small>Selected</small>
         </div>
       </div>

@@ -20,15 +20,16 @@
 .doctor-item .spec { font-size:13px; color: #64748b; }
 
 .status-badge { display:inline-block; padding:8px 12px; border-radius:20px; font-weight:700; font-size:13px; }
-.status-badge.available { background: rgba(16,185,129,0.12); color: #059669; }
-.status-badge.unavailable { background: rgba(239,68,68,0.08); color: #b91c1c; }
+.status-badge.available { background: rgba(16,185,129,0.18); color: #059669; }
+.status-badge.unavailable { background: rgba(107,114,128,0.08); color: #6b7280; }
 
 .date-pill { display:inline-block; background: #eef2ff; padding: 10px 12px; border-radius: 8px; color:#0f172a; }
 .seat-grid { display:grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
-.seat { padding: 18px 6px; background: #e6f8ef; border-radius: 8px; border: none; cursor: pointer; display:flex; align-items:center; justify-content:center; font-weight:700; min-height:48px; }
+.seat { padding: 18px 6px; background: #49ca76; border-radius: 8px; border: none; cursor: pointer; display:flex; align-items:center; justify-content:center; font-weight:700; min-height:48px; transition: transform 0.15s ease, box-shadow 0.15s ease; }
 .seat strong { font-size: 16px; }
-.seat.selected { background: #60a5fa; color: white; }
+.seat.selected { background: #ef4444; color: white;  }
 .seat.booked { background: #f1f5f9; color: #94a3b8; cursor: not-allowed; text-decoration: line-through; }
+.seat:not(.booked):hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(16,185,129,0.12); }
 .seat-grid { display:grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
 .booking-sidebar .booking-sidebar-card { background: #fff; padding: 16px; border-radius: 12px; box-shadow: 0 8px 30px rgba(2,6,23,0.04); }
 .booking-sidebar .muted { color:#64748b; }
@@ -62,3 +63,7 @@
 	font-weight: 600;
 }
 .date-selector-label { display:block; margin-bottom:6px; color:#64748b; font-weight:700; }
+
+/* Small square used in legend */
+.seat-legend-square { width: 28px; height: 28px; border-radius: 6px; display:inline-block; }
+.seat-legend-small { width: 18px; height: 18px; border-radius: 4px; display:inline-block; }
