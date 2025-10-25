@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.DayOfWeek;
 import java.util.List;
 
 @RestController
@@ -20,5 +21,10 @@ public class filters {
     @GetMapping("/todayWorkPlaces")
     public ResponseEntity<List<WorkPLaceDto>> viewTodayWorkPlaces(@RequestParam Long id){
         return filterService.viewTodayWorkPlaces(id);
+    }
+
+    @GetMapping("/workPLacesByDay")
+    public ResponseEntity<List<WorkPLaceDto>> viewWorkPlacesByDay(@RequestParam Long id, @RequestParam DayOfWeek dayOfWeek){
+        return filterService.viewWorkPlacesByDay(id, dayOfWeek);
     }
 }
