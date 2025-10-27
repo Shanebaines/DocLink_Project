@@ -27,4 +27,9 @@ public class filters {
     public ResponseEntity<List<WorkPLaceDto>> viewWorkPlacesByDay(@RequestParam Long id, @RequestParam DayOfWeek dayOfWeek){
         return filterService.viewWorkPlacesByDay(id, dayOfWeek);
     }
+
+    @GetMapping("/workPlaceNow")
+    public ResponseEntity<List<WorkPLaceDto>> viewWorkPlaceNow(@RequestParam Long id){
+        return filterService.viewWorkPlaceNow(id);
+    }
 }

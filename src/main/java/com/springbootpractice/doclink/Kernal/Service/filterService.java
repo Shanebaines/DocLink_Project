@@ -1,5 +1,7 @@
 package com.springbootpractice.doclink.Kernal.Service;
 
+import com.springbootpractice.doclink.Dealer.DoctorTimeSlotRepository;
+import com.springbootpractice.doclink.Kernal.Relations.Doctor_time_slots;
 import com.springbootpractice.doclink.Listner.Dto.Response.AvailableSlotsDto;
 import com.springbootpractice.doclink.Listner.Dto.Response.WorkPLaceDto;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -22,27 +26,71 @@ import java.util.stream.Collectors;
 public class filterService {
 
     private final DoctorService doctorService;
+    private final DoctorTimeSlotRepository doctorTimeSlotRepository;
 
-    /**
-     * Returns all doctor's workplaces with slots available today.
-     */
     public ResponseEntity<List<WorkPLaceDto>> viewTodayWorkPlaces(Long doctorId) {
         DayOfWeek today = LocalDate.now().getDayOfWeek();
         return viewWorkPlacesByDay(doctorId, today);
     }
 
-    /**
-     * Returns all doctor's workplaces filtered by a specific weekday.
-     */
     public ResponseEntity<List<WorkPLaceDto>> viewWorkPlacesByDay(Long doctorId, DayOfWeek dayOfWeek) {
         List<WorkPLaceDto> filteredWorkPlaces = findWorkPlacesByDay(doctorId, dayOfWeek);
         return ResponseEntity.ok(filteredWorkPlaces);
     }
 
-    /**
-     * Retrieves and filters the doctor’s workplaces to include only those
-     * that have available slots on the given day.
-     */
+    public ResponseEntity<List<WorkPLaceDto>> viewWorkPlaceNow(Long doctorId) {
+        List<WorkPLaceDto> todayWorkPlaces = viewTodayWorkPlaces(doctorId).getBody();
+        if (todayWorkPlaces == null || todayWorkPlaces.isEmpty()) {
+            log.info("No workplaces found for today for doctor id: {}", doctorId);
+            return ResponseEntity.ok(Collections.emptyList());
+        }
+
+        LocalTime now = LocalTime.now();
+
+        // Flatten all slots with their parent workplace
+        List<WorkPlaceSlotWrapper> allSlots = todayWorkPlaces.stream()
+                .flatMap(workPlace -> workPlace.getAvailableSlots().stream()
+                        .map(slot -> new WorkPlaceSlotWrapper(workPlace, slot)))
+                .collect(Collectors.toList());
+
+        // Parse timePeriod into start/end
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("HH:mm");
+        List<WorkPlaceSlotWrapper> sortedByStartTime = allSlots.stream()
+                .peek(wrapper -> {
+                    String[] parts = wrapper.slot.getTimePeriod().split(" - ");
+                    wrapper.start = LocalTime.parse(parts[0].trim(), fmt);
+                    wrapper.end = LocalTime.parse(parts[1].trim(), fmt);
+                })
+                .sorted((a, b) -> a.start.compareTo(b.start))
+                .collect(Collectors.toList());
+
+        // Find the "latest relevant" — either current ongoing, or next upcoming.
+        WorkPlaceSlotWrapper selected = sortedByStartTime.stream()
+                .filter(wrapper -> !wrapper.end.isBefore(now))
+                .findFirst()
+                .orElse(null);
+
+        if (selected == null) {
+            log.info("No upcoming slots found today for doctor id: {}", doctorId);
+            return ResponseEntity.ok(Collections.emptyList());
+        }
+
+        // Return that workplace only (you can wrap as list for consistency)
+        return ResponseEntity.ok(List.of(selected.workPlace));
+    }
+
+    private static class WorkPlaceSlotWrapper {
+        WorkPLaceDto workPlace;
+        AvailableSlotsDto slot;
+        LocalTime start;
+        LocalTime end;
+
+        WorkPlaceSlotWrapper(WorkPLaceDto wp, AvailableSlotsDto s) {
+            this.workPlace = wp;
+            this.slot = s;
+        }
+    }
+
     private List<WorkPLaceDto> findWorkPlacesByDay(Long doctorId, DayOfWeek dayOfWeek) {
         // Step 1: Fetch workplace list
         List<WorkPLaceDto> allWorkPlaces = doctorService.viewWorkPlaces(doctorId).getBody();
@@ -59,9 +107,6 @@ public class filterService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Filters a workplace’s available slots to only include the specified day.
-     */
     private WorkPLaceDto filterWorkPlaceSlots(WorkPLaceDto workPlace, DayOfWeek dayOfWeek) {
         List<AvailableSlotsDto> matchingSlots = workPlace.getAvailableSlots().stream()
                 .filter(slot -> slot.getDayOfWeek() == dayOfWeek)
