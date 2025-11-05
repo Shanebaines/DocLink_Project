@@ -1,7 +1,5 @@
 package com.springbootpractice.doclink.Kernal.Service;
 
-import com.springbootpractice.doclink.Dealer.DoctorTimeSlotRepository;
-import com.springbootpractice.doclink.Kernal.Relations.Doctor_time_slots;
 import com.springbootpractice.doclink.Listner.Dto.Response.AvailableSlotsDto;
 import com.springbootpractice.doclink.Listner.Dto.Response.WorkPLaceDto;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +24,6 @@ import java.util.stream.Collectors;
 public class filterService {
 
     private final DoctorService doctorService;
-    private final DoctorTimeSlotRepository doctorTimeSlotRepository;
 
     public ResponseEntity<List<WorkPLaceDto>> viewTodayWorkPlaces(Long doctorId) {
         DayOfWeek today = LocalDate.now().getDayOfWeek();

@@ -29,6 +29,9 @@ public class Doctors_in_Hospital {
     @Column(name = "end_date")
     private LocalDate endDate;
 
+    @Column(name = "consultation_fee", precision = 10, scale = 2)
+    private java.math.BigDecimal consultationFee;
+
     @Data @NoArgsConstructor @AllArgsConstructor
     public static class PK implements Serializable {
         private Long hospital;

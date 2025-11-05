@@ -3,6 +3,7 @@ package com.springbootpractice.doclink.Listner.Controllers;
 import com.springbootpractice.doclink.Kernal.Entity.Appointment;
 import com.springbootpractice.doclink.Kernal.Service.AppointmentService;
 import com.springbootpractice.doclink.Listner.Dto.Request.CreateAppointmentRequestDto;
+import com.springbootpractice.doclink.Listner.Dto.Request.UpdateAppointmentStatusByDoctorDto;
 import com.springbootpractice.doclink.Listner.Dto.Request.UpdateStatusRequestDto;
 import com.springbootpractice.doclink.Listner.Dto.Response.viewAppointmentsDto;
 import jakarta.validation.Valid;
@@ -54,6 +55,22 @@ public class AppointmentController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected server error occurred.");
+        }
+    }
+
+    @PatchMapping("/updateStatusByDoctor")
+    public ResponseEntity<?> updateAppointmentStatusByDoctor(@Valid @RequestBody UpdateAppointmentStatusByDoctorDto requestDto) {
+        try {
+            Appointment updated = appointmentService.updateAppointmentStatusByDoctor(requestDto);
+            String msg = String.format("Appointment %d marked as COMPLETED successfully.", updated.getAppointmentId());
+            return ResponseEntity.ok(msg);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Unexpected server error while updating appointment status.");
         }
     }
 }

@@ -35,8 +35,8 @@ public class Doctor {
 
     private String qualification;
 
-    @Column(name = "consultation_fee", precision = 10, scale = 2)
-    private java.math.BigDecimal consultationFee;
+    /*@Column(name = "consultation_fee", precision = 10, scale = 2)
+    private java.math.BigDecimal consultationFee;*/
 
     @Column(name = "availability_schedule", columnDefinition = "JSONB")
     private String availabilitySchedule;
