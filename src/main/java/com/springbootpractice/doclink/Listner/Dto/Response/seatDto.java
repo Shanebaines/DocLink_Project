@@ -4,7 +4,7 @@ import com.springbootpractice.doclink.Kernal.Enums.AppointmentStatusType;
 import lombok.Data;
 
 @Data
-public class seatsDto {
+public class seatDto {
     private Integer seatNumber;
     private AppointmentStatusType status;
 }

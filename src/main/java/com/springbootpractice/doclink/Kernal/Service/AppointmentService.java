@@ -8,8 +8,10 @@ import com.springbootpractice.doclink.Kernal.Entity.Patient;
 import com.springbootpractice.doclink.Kernal.Enums.AppointmentStatusType;
 import com.springbootpractice.doclink.Kernal.Relations.Doctor_time_slots;
 import com.springbootpractice.doclink.Listner.Dto.Request.CreateAppointmentRequestDto;
-import com.springbootpractice.doclink.Listner.Dto.Request.UpdateAppointmentStatusByDoctorDto;
+import com.springbootpractice.doclink.Listner.Dto.Request.patientSeatDto;
 import com.springbootpractice.doclink.Listner.Dto.Request.UpdateStatusRequestDto;
+import com.springbootpractice.doclink.Listner.Dto.Response.seatDto;
+import com.springbootpractice.doclink.Listner.Dto.Response.seatViewDto;
 import com.springbootpractice.doclink.Listner.Dto.Response.viewAppointmentsDto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -128,7 +130,7 @@ public class AppointmentService {
         dto.setTimeSlot(appointment.getTimeSlot().getStartTime() + " - " + appointment.getTimeSlot().getEndTime());
         dto.setAvailableTime(appointment.getAppointmentDate().atStartOfDay());
         dto.setDayOfWeek(appointment.getTimeSlot().getDayOfWeek());
-
+        dto.setAppointmentStatus(appointment.getStatus());
         return dto;
     }
 
@@ -136,7 +138,7 @@ public class AppointmentService {
      * Used by doctors to mark an appointment as completed.
      */
     @Transactional
-    public Appointment updateAppointmentStatusByDoctor(@Valid UpdateAppointmentStatusByDoctorDto requestDto) {
+    public Appointment updateAppointmentStatusByDoctor(@Valid patientSeatDto requestDto) {
 
         Long slotId = requestDto.getSlot_id();
         LocalDate date = requestDto.getAppointment_date();
@@ -160,5 +162,34 @@ public class AppointmentService {
         appointment.setUpdatedAt(LocalDateTime.now());
 
         return appointmentRepository.save(appointment);
+    }
+
+    @Transactional(readOnly = true)
+    public ResponseEntity<seatViewDto> viewSeat(patientSeatDto request) {
+        Appointment appointment = appointmentRepository
+                .findByTimeSlot_IdAndAppointmentDateAndSeatNumber(
+                        request.getSlot_id(),
+                        request.getAppointment_date(),
+                        request.getSeat_number())
+                .orElseThrow(() -> new IllegalArgumentException(
+                        String.format("No appointment found for slot=%d, date=%s, seat=%d",
+                                request.getSlot_id(), request.getAppointment_date(), request.getSeat_number())));
+
+        AppointmentStatusType status = appointment.getStatus();
+        if (!(status == AppointmentStatusType.completed || status == AppointmentStatusType.scheduled)) {
+            return ResponseEntity.notFound().build();
+        }
+
+        seatDto seat = new seatDto();
+        seat.setSeatNumber(request.getSeat_number());
+        seat.setStatus(status);
+
+        seatViewDto response = new seatViewDto();
+        response.setPatientId(appointment.getPatient().getPatientId());
+        response.setPatientName(appointment.getPatient().getUser().getFirstName() + " " +
+                appointment.getPatient().getUser().getLastName());
+        response.setSeat(seat);
+
+        return ResponseEntity.ok(response);
     }
 }

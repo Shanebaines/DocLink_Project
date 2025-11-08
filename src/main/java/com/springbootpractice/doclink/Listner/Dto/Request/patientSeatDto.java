@@ -5,7 +5,7 @@ import lombok.Data;
 import java.time.LocalDate;
 
 @Data
-public class UpdateAppointmentStatusByDoctorDto {
+public class patientSeatDto {
     Long slot_id;
     LocalDate appointment_date;
     Integer seat_number;

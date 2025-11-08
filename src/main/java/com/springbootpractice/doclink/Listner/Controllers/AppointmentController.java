@@ -3,8 +3,9 @@ package com.springbootpractice.doclink.Listner.Controllers;
 import com.springbootpractice.doclink.Kernal.Entity.Appointment;
 import com.springbootpractice.doclink.Kernal.Service.AppointmentService;
 import com.springbootpractice.doclink.Listner.Dto.Request.CreateAppointmentRequestDto;
-import com.springbootpractice.doclink.Listner.Dto.Request.UpdateAppointmentStatusByDoctorDto;
+import com.springbootpractice.doclink.Listner.Dto.Request.patientSeatDto;
 import com.springbootpractice.doclink.Listner.Dto.Request.UpdateStatusRequestDto;
+import com.springbootpractice.doclink.Listner.Dto.Response.seatViewDto;
 import com.springbootpractice.doclink.Listner.Dto.Response.viewAppointmentsDto;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -24,6 +25,11 @@ public class AppointmentController {
     @GetMapping("/viewMyAppointments") //tested
     public ResponseEntity<List<viewAppointmentsDto>> viewAppointments(@RequestParam Long id){
         return appointmentService.viewAppointments(id);
+    }
+
+    @GetMapping("/viewSeat")
+    public ResponseEntity<seatViewDto> viewSeat(@RequestBody patientSeatDto patientSeatDto){
+        return appointmentService.viewSeat(patientSeatDto);
     }
 
     @PostMapping("/book") //tested
@@ -59,7 +65,7 @@ public class AppointmentController {
     }
 
     @PatchMapping("/updateStatusByDoctor")
-    public ResponseEntity<?> updateAppointmentStatusByDoctor(@Valid @RequestBody UpdateAppointmentStatusByDoctorDto requestDto) {
+    public ResponseEntity<?> updateAppointmentStatusByDoctor(@Valid @RequestBody patientSeatDto requestDto) {
         try {
             Appointment updated = appointmentService.updateAppointmentStatusByDoctor(requestDto);
             String msg = String.format("Appointment %d marked as COMPLETED successfully.", updated.getAppointmentId());
@@ -73,4 +79,5 @@ public class AppointmentController {
                     .body("Unexpected server error while updating appointment status.");
         }
     }
+
 }
