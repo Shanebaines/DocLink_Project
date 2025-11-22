@@ -1,5 +1,3 @@
-Truncate Table; truncate all of the table before populate
----------------------------------------------------------------------------------------
 select * from patients;
 select * from doctor_time_slots;
 select * from appointments;
@@ -8,7 +6,7 @@ select * from users;
 select * from hospitals;
 select * from hospital_doctors;
 select * from doctor_availability;
----------------------------------------------------------------------------------------
+
 INSERT INTO users
 (username, password, first_name, last_name, phone_number, email, address, gps_location,
  registration_date, user_type, gender_type, created_at, updated_at)
@@ -34,13 +32,12 @@ VALUES
 ('mei_chen', 'hashed_password_654', 'Mei', 'Chen', '7775552222', 'mei.chen@example.com',
  '88 Riverwalk Blvd, Central City', '(40.4406, -79.9959)',
  '2023-05-10', 'doctor', 'female', '2023-05-10 14:00:00', '2023-05-10 14:00:00');
---------------------------------------------------------------------------------------------------------
---------------------------------------------------------------------------------------------------------
+
 INSERT INTO doctors
-(image, user_id, specialization, license_number, years_experience, qualification, consultation_fee, availability_schedule)
+(image, user_id, specialization, license_number, years_experience, qualification, availability_schedule)
 VALUES
     ('https://example.com/images/dr_smith.jpg', 3, 'Cardiology', 'LIC-12345-A', 12,
-     'MD, Fellow of the American College of Cardiology', 150.00,
+     'MD, Fellow of the American College of Cardiology',
      '{
        "monday": "09:00-16:00",
        "tuesday": "09:00-16:00",
@@ -50,7 +47,7 @@ VALUES
      }'),
 
     ('https://example.com/images/dr_jones.jpg', 4, 'Pediatrics', 'LIC-67890-B', 8,
-     'MD, Pediatric Specialist', 100.00,
+     'MD, Pediatric Specialist',
      '{
        "monday": "08:00-15:00",
        "tuesday": "08:00-15:00",
@@ -60,7 +57,7 @@ VALUES
      }'),
 
     ('https://example.com/images/dr_chen.jpg', 5, 'Dermatology', 'LIC-54321-C', 15,
-     'MBBS, Diploma in Dermatology', 180.00,
+     'MBBS, Diploma in Dermatology',
      '{
        "monday": "11:00-18:00",
        "tuesday": "11:00-18:00",
@@ -68,15 +65,13 @@ VALUES
        "thursday": "11:00-18:00",
        "friday": "11:00-18:00"
      }');
-----------------------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------------------
+
 INSERT INTO patients
 (user_id, date_of_birth, emergency_contact, insurance_number)
 VALUES
     (1, '1988-03-22', 'Jane Doe – 555-888-9999', 'INS-001122-A'),
     (2, '1995-07-18', 'Alex Rogers – 555-777-4444', 'INS-009988-B');
-----------------------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------------------
+
 INSERT INTO hospitals
 (hospital_name, address, gps_location, phone_number, email, hospital_type,
  bed_capacity, accreditation, emergency_services, has_pharmacy, created_at, updated_at)
@@ -145,23 +140,21 @@ VALUES
      TRUE,
      '2022-02-14 14:30:00',
      '2024-02-14 14:30:00');
-------------------------------------------------------------------------------------------------------------------
-------------------------------------------------------------------------------------------------------------------
+
 INSERT INTO hospital_doctors
-(hospital_id, doctor_id, start_date, end_date)
+(hospital_id, doctor_id, start_date, end_date, consultation_fee)
 VALUES
 -- Dr Alice Smith works at two hospitals
-(1, 1, '2015-03-01', NULL),
-(2, 1, '2018-06-01', NULL),
+(1, 1, '2015-03-01', NULL,1500),
+(2, 1, '2018-06-01', NULL,2000),
 
 -- Dr Robert Jones is teaching pediatrics at the university hospital
-(3, 2, '2017-09-12', NULL),
+(3, 2, '2017-09-12', NULL,1500),
 
 -- Dr Mei Chen consults for both a general and a rehabilitation hospital
-(1, 3, '2012-11-05', '2020-12-31'),
-(5, 3, '2021-01-15', NULL);
--------------------------------------------------------------------------------------------------------------
--------------------------------------------------------------------------------------------------------------
+(1, 3, '2012-11-05', '2020-12-31',4500),
+(5, 3, '2021-01-15', NULL,1300);
+
 INSERT INTO doctor_time_slots
 (doctor_id, hospital_id, day_of_week, start_time, end_time, total_seats, version, created_at, updated_at)
 VALUES
@@ -183,8 +176,7 @@ VALUES
 (3, 5, 'TUESDAY',   '11:00', '15:00', 7,  0, NOW(), NOW()),
 (3, 5, 'THURSDAY',  '11:00', '15:00', 7,  0, NOW(), NOW()),
 (3, 5, 'SATURDAY',  '09:00', '12:00', 6,  0, NOW(), NOW());
-----------------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------------
+
 INSERT INTO doctor_availability
 (doctor_id, hospital_id, slot_id, availability, effective_from, effective_until, version, created_at, updated_at)
 VALUES
@@ -206,8 +198,7 @@ VALUES
 (3, 5, 9, TRUE,  '2024-01-01 00:00:00', NULL, 0, NOW(), NOW()),
 (3, 5, 10, TRUE, '2024-01-01 00:00:00', NULL, 0, NOW(), NOW()),
 (3, 5, 11, FALSE,'2024-08-01 00:00:00', '2024-08-15 00:00:00', 0, NOW(), NOW());
-----------------------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------------------
+
 INSERT INTO appointments
 (patient_id, doctor_id, hospital_id, appointment_date, time_slots_id, seat_number,
  status, reason, notes, consultation_fee, created_at, updated_at)

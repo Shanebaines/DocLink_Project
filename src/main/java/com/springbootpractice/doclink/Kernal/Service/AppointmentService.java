@@ -138,27 +138,36 @@ public class AppointmentService {
      * Used by doctors to mark an appointment as completed.
      */
     @Transactional
-    public Appointment updateAppointmentStatusByDoctor(@Valid patientSeatDto requestDto) {
+    public Appointment updateAppointmentStatusByDoctor(@Valid patientSeatDto requestDto,
+                                                       AppointmentStatusType appointmentStatus) {
+        // Validate that only completed or not_completed can be set by doctor
+        if (appointmentStatus != AppointmentStatusType.completed &&
+                appointmentStatus != AppointmentStatusType.not_completed) {
+            throw new IllegalArgumentException(
+                    "Doctor can only mark appointments as 'completed' or 'not_completed'. Received: " + appointmentStatus);
+        }
 
         Long slotId = requestDto.getSlot_id();
         LocalDate date = requestDto.getAppointment_date();
         Integer seat = requestDto.getSeat_number();
 
-        // The repository method should be changed to return Optional<Appointment>
         Appointment appointment = appointmentRepository
                 .findByTimeSlot_IdAndAppointmentDateAndSeatNumber(slotId, date, seat)
                 .orElseThrow(() -> new IllegalArgumentException(
-                        String.format("No appointment found for slot=%d, date=%s, seat=%d", slotId, date, seat)));
+                        String.format("No appointment found for slot=%d, date=%s, seat=%d",
+                                slotId, date, seat)));
 
-        if (appointment.getStatus() == AppointmentStatusType.completed) {
-            throw new IllegalStateException("Appointment is already marked as completed.");
-        }
-
+        // Validate current status
         if (appointment.getStatus() == AppointmentStatusType.cancelled) {
-            throw new IllegalStateException("Cannot mark a cancelled appointment as completed.");
+            throw new IllegalStateException("Cannot update a cancelled appointment.");
         }
 
-        appointment.setStatus(AppointmentStatusType.completed);
+        if (appointment.getStatus() == appointmentStatus) {
+            throw new IllegalStateException(
+                    String.format("Appointment is already marked as %s.", appointmentStatus.name()));
+        }
+
+        appointment.setStatus(appointmentStatus);
         appointment.setUpdatedAt(LocalDateTime.now());
 
         return appointmentRepository.save(appointment);

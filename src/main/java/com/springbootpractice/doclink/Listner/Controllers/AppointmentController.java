@@ -1,6 +1,7 @@
 package com.springbootpractice.doclink.Listner.Controllers;
 
 import com.springbootpractice.doclink.Kernal.Entity.Appointment;
+import com.springbootpractice.doclink.Kernal.Enums.AppointmentStatusType;
 import com.springbootpractice.doclink.Kernal.Service.AppointmentService;
 import com.springbootpractice.doclink.Listner.Dto.Request.CreateAppointmentRequestDto;
 import com.springbootpractice.doclink.Listner.Dto.Request.patientSeatDto;
@@ -65,13 +66,17 @@ public class AppointmentController {
     }
 
     @PatchMapping("/updateStatusByDoctor")
-    public ResponseEntity<?> updateAppointmentStatusByDoctor(@Valid @RequestBody patientSeatDto requestDto) {
+    public ResponseEntity<?> updateAppointmentStatusByDoctor(
+            @RequestParam AppointmentStatusType appointmentStatus,
+            @Valid @RequestBody patientSeatDto requestDto) {
         try {
-            Appointment updated = appointmentService.updateAppointmentStatusByDoctor(requestDto);
-            String msg = String.format("Appointment %d marked as COMPLETED successfully.", updated.getAppointmentId());
+            Appointment updated = appointmentService.updateAppointmentStatusByDoctor(requestDto, appointmentStatus);
+            String msg = String.format("Appointment %d marked as %s successfully.",
+                    updated.getAppointmentId(),
+                    appointmentStatus.name().toUpperCase());
             return ResponseEntity.ok(msg);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         } catch (Exception e) {

@@ -1,3 +1,10 @@
 package com.springbootpractice.doclink.Kernal.Enums;
 
-public enum AppointmentStatusType { scheduled, completed, cancelled, rescheduled, no_show }
+public enum AppointmentStatusType {
+    scheduled,
+    completed,
+    not_completed,
+    cancelled,
+    rescheduled,
+    no_show
+}
