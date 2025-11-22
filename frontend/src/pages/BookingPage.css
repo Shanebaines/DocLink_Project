@@ -27,8 +27,8 @@
 .seat-grid { display:grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
 .seat { padding: 18px 6px; background: #49ca76; border-radius: 8px; border: none; cursor: pointer; display:flex; align-items:center; justify-content:center; font-weight:700; min-height:48px; transition: transform 0.15s ease, box-shadow 0.15s ease; }
 .seat strong { font-size: 16px; }
-.seat.selected { background: #ef4444; color: white;  }
-.seat.booked { background: #f1f5f9; color: #94a3b8; cursor: not-allowed; text-decoration: line-through; }
+.seat.selected { background: #3d77ca; color: rgb(0, 0, 0); box-shadow: 0 6px 18px rgba(239,68,68,0.12); }
+.seat.booked { background: #e06767; color: #000000; cursor: not-allowed; text-decoration: line-through; }
 .seat:not(.booked):hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(16,185,129,0.12); }
 .seat-grid { display:grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
 .booking-sidebar .booking-sidebar-card { background: #fff; padding: 16px; border-radius: 12px; box-shadow: 0 8px 30px rgba(2,6,23,0.04); }
