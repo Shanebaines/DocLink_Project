@@ -2,14 +2,12 @@ package com.springbootpractice.doclink.Listner.Controllers;
 
 import java.util.List;
 
-import com.springbootpractice.doclink.Listner.Dto.Response.WorkPLaceDto;
+import com.springbootpractice.doclink.Listner.Dto.Request.CreateMedicalRecordDto;
+import com.springbootpractice.doclink.Listner.Dto.Response.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.springbootpractice.doclink.Kernal.Service.DoctorService;
-import com.springbootpractice.doclink.Listner.Dto.Response.PagedResponse;
-import com.springbootpractice.doclink.Listner.Dto.Response.ViewDoctorDto;
-import com.springbootpractice.doclink.Listner.Dto.Response.ViewDoctorsDto;
 
 import lombok.AllArgsConstructor;
 
@@ -78,5 +76,12 @@ public class DoctorController {
     @GetMapping("/specializations")
     public ResponseEntity<List<String>> specializations() {
         return doctorService.getSpecializations();
+    }
+
+
+    @PostMapping("/createMedicalRecord")
+    public ResponseEntity<MedicalRecordDto> createMedicalRecord(
+            @RequestBody CreateMedicalRecordDto createDto) {
+        return doctorService.createMedicalRecord(createDto);
     }
 }

@@ -1,21 +1,23 @@
 package com.springbootpractice.doclink.Kernal.Service;
 
-import com.springbootpractice.doclink.Dealer.DoctorAvailabilityRepository;
-import com.springbootpractice.doclink.Dealer.DoctorRepository;
-import com.springbootpractice.doclink.Dealer.DoctorsInHospitalRepository;
-import com.springbootpractice.doclink.Dealer.DoctorTimeSlotRepository;
+import com.springbootpractice.doclink.Dealer.*;
 import com.springbootpractice.doclink.Kernal.Entity.Doctor;
 import com.springbootpractice.doclink.Kernal.Entity.Hospital;
+import com.springbootpractice.doclink.Kernal.Entity.MedicalRecord;
+import com.springbootpractice.doclink.Kernal.Entity.Patient;
 import com.springbootpractice.doclink.Kernal.Relations.Doctor_time_slots;
 import com.springbootpractice.doclink.Kernal.Relations.Doctors_in_Hospital;
+import com.springbootpractice.doclink.Listner.Dto.Request.CreateMedicalRecordDto;
 import com.springbootpractice.doclink.Listner.Dto.Response.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.*;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
@@ -29,6 +31,9 @@ public class DoctorService {
     private final DoctorRepository doctorRepository;
     private final DoctorsInHospitalRepository doctorsInHospitalRepository;
     private final DoctorTimeSlotRepository doctorTimeSlotRepository;
+
+    private final MedicalRecordRepository medicalRecordRepository;  // ADD THIS
+    private final PatientRepository patientRepository;
 
     public ResponseEntity<ViewDoctorDto> viewDoctor(Long id) {
         Optional<Doctor> optDoctor = doctorRepository.findById(id);
@@ -192,5 +197,65 @@ public class DoctorService {
 
     private String emptyToNull(String s) {
         return (s == null || s.trim().isEmpty()) ? null : s.trim();
+    }
+
+
+    @Transactional
+    public ResponseEntity<MedicalRecordDto> createMedicalRecord(CreateMedicalRecordDto createDto) {
+
+        // Check if patient exists
+        Optional<Patient> optPatient = patientRepository.findById(createDto.getPatientId());
+        if (optPatient.isEmpty()) {
+            log.error("Patient not found with ID: {}", createDto.getPatientId());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
+        // Check if doctor exists
+        Optional<Doctor> optDoctor = doctorRepository.findById(createDto.getDoctorId());
+        if (optDoctor.isEmpty()) {
+            log.error("Doctor not found with ID: {}", createDto.getDoctorId());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
+        // Create new MedicalRecord entity
+        MedicalRecord record = new MedicalRecord();
+        record.setPatient(optPatient.get());
+        record.setDoctor(optDoctor.get());
+        record.setVisitDate(createDto.getVisitDate());
+        record.setSymptoms(createDto.getSymptoms());
+        record.setDiagnosis(createDto.getDiagnosis());
+        record.setTreatment(createDto.getTreatment());
+        record.setNotes(createDto.getNotes());
+        record.setVitalSigns(createDto.getVitalSigns());
+
+        // Set timestamps
+        LocalDateTime now = LocalDateTime.now();
+        record.setCreatedAt(now);
+        record.setUpdatedAt(now);
+
+        // Save to database
+        MedicalRecord savedRecord = medicalRecordRepository.save(record);
+
+        log.info("Medical record created with ID: {}", savedRecord.getRecordId());
+
+        // Convert entity to DTO and return
+        MedicalRecordDto responseDto = toMedicalRecordDto(savedRecord);
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
+    }
+
+    private MedicalRecordDto toMedicalRecordDto(MedicalRecord record) {
+        MedicalRecordDto dto = new MedicalRecordDto();
+        dto.setRecordId(record.getRecordId());
+        dto.setPatientId(record.getPatient().getPatientId());
+        dto.setDoctorId(record.getDoctor() != null ? record.getDoctor().getDoctorId() : null);
+        dto.setVisitDate(record.getVisitDate());
+        dto.setSymptoms(record.getSymptoms());
+        dto.setDiagnosis(record.getDiagnosis());
+        dto.setTreatment(record.getTreatment());
+        dto.setNotes(record.getNotes());
+        dto.setVitalSigns(record.getVitalSigns());
+        dto.setCreatedAt(record.getCreatedAt());
+        dto.setUpdatedAt(record.getUpdatedAt());
+        return dto;
     }
 }
