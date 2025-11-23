@@ -232,3 +232,56 @@ VALUES
 (1, 3, 5, '2024-06-20', 10, 2,
  'rescheduled', 'Extended rehab session', 'Doctor moved from Tuesday → Thursday.', 180.00,
  '2024-06-15 09:30:00', '2024-06-19 16:00:00');
+
+ -- Medications
+ INSERT INTO medications
+ (medication_name, generic_name, price, description, manufacturer, created_at, updated_at)
+ VALUES
+ (
+     'Paracetamol 500mg',
+     'Acetaminophen',
+     150.00,
+     'Pain reliever and fever reducer. Used for headaches, muscle aches, arthritis, backache, toothaches, colds, and fevers.',
+     'GlaxoSmithKline',
+     NOW(),
+     NOW()
+ ),
+ (
+     'Amoxicillin 250mg',
+     'Amoxicillin',
+     350.00,
+     'Antibiotic used to treat bacterial infections including chest infections, dental abscesses, and ear infections.',
+     'Pfizer',
+     NOW(),
+     NOW()
+ ),
+ (
+     'Omeprazole 20mg',
+     'Omeprazole',
+     280.00,
+     'Proton pump inhibitor used to treat gastroesophageal reflux disease (GERD), stomach ulcers, and heartburn.',
+     'AstraZeneca',
+     NOW(),
+     NOW()
+ ),
+ (
+     'Metformin 500mg',
+     'Metformin Hydrochloride',
+     120.00,
+     'Oral diabetes medication used to control blood sugar levels in type 2 diabetes patients.',
+     'Bristol-Myers Squibb',
+     NOW(),
+     NOW()
+ ),
+ (
+     'Cetirizine 10mg',
+     'Cetirizine Hydrochloride',
+     180.00,
+     'Antihistamine used to relieve allergy symptoms such as watery eyes, runny nose, itching, and sneezing.',
+     'Johnson & Johnson',
+     NOW(),
+     NOW()
+ );
+
+
+
