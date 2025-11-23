@@ -185,7 +185,7 @@ public class AppointmentService {
                                 request.getSlot_id(), request.getAppointment_date(), request.getSeat_number())));
 
         AppointmentStatusType status = appointment.getStatus();
-        if (!(status == AppointmentStatusType.completed || status == AppointmentStatusType.scheduled)) {
+        if (!(status == AppointmentStatusType.completed || status == AppointmentStatusType.scheduled || status == AppointmentStatusType.not_completed)) {
             return ResponseEntity.notFound().build();
         }
 
