@@ -1,13 +1,13 @@
 package com.springbootpractice.doclink.Kernal.Service;
 
 import com.springbootpractice.doclink.Dealer.*;
-import com.springbootpractice.doclink.Kernal.Entity.Doctor;
-import com.springbootpractice.doclink.Kernal.Entity.Hospital;
-import com.springbootpractice.doclink.Kernal.Entity.MedicalRecord;
-import com.springbootpractice.doclink.Kernal.Entity.Patient;
+import com.springbootpractice.doclink.Kernal.Entity.*;
+import com.springbootpractice.doclink.Kernal.Enums.PrescriptionStatusType;
 import com.springbootpractice.doclink.Kernal.Relations.Doctor_time_slots;
 import com.springbootpractice.doclink.Kernal.Relations.Doctors_in_Hospital;
 import com.springbootpractice.doclink.Listner.Dto.Request.CreateMedicalRecordDto;
+import com.springbootpractice.doclink.Listner.Dto.Request.CreatePrescriptionRequest;
+import com.springbootpractice.doclink.Listner.Dto.Request.PrescriptionMedicationDTO;
 import com.springbootpractice.doclink.Listner.Dto.Response.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,8 +17,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -32,8 +34,12 @@ public class DoctorService {
     private final DoctorsInHospitalRepository doctorsInHospitalRepository;
     private final DoctorTimeSlotRepository doctorTimeSlotRepository;
 
-    private final MedicalRecordRepository medicalRecordRepository;  // ADD THIS
+    private final MedicalRecordRepository medicalRecordRepository;
     private final PatientRepository patientRepository;
+
+    private final PrescriptionRepository prescriptionRepository;
+    private final PrescriptionMedicationRepository prescriptionMedicationRepository;
+    private final MedicationRepository medicationRepository;
 
     public ResponseEntity<ViewDoctorDto> viewDoctor(Long id) {
         Optional<Doctor> optDoctor = doctorRepository.findById(id);
@@ -257,5 +263,130 @@ public class DoctorService {
         dto.setCreatedAt(record.getCreatedAt());
         dto.setUpdatedAt(record.getUpdatedAt());
         return dto;
+    }
+
+
+    @Transactional
+    public ResponseEntity<PrescriptionResponse> createPrescription(CreatePrescriptionRequest request) {
+        log.info("Creating prescription for patient ID: {} by doctor ID: {}",
+                request.getPatientId(), request.getDoctorId());
+
+        // 1. Validate patient exists
+        Optional<Patient> optPatient = patientRepository.findById(request.getPatientId());
+        if (optPatient.isEmpty()) {
+            log.error("Patient not found with ID: {}", request.getPatientId());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        Patient patient = optPatient.get();
+
+        // 2. Validate doctor exists
+        Optional<Doctor> optDoctor = doctorRepository.findById(request.getDoctorId());
+        if (optDoctor.isEmpty()) {
+            log.error("Doctor not found with ID: {}", request.getDoctorId());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        Doctor doctor = optDoctor.get();
+
+        // 3. Create and save prescription
+        Prescription prescription = new Prescription();
+        prescription.setPatient(patient);
+        prescription.setDoctor(doctor);
+
+        // Set prescription date - use provided date or current date
+        prescription.setPrescriptionDate(
+                request.getPrescriptionDate() != null
+                        ? request.getPrescriptionDate()
+                        : LocalDate.now()
+        );
+
+        prescription.setDiagnosis(request.getDiagnosis());
+        prescription.setInstructions(request.getInstructions());
+        prescription.setStatus(PrescriptionStatusType.active);
+
+        LocalDateTime now = LocalDateTime.now();
+        prescription.setCreatedAt(now);
+        prescription.setUpdatedAt(now);
+
+        Prescription savedPrescription = prescriptionRepository.save(prescription);
+        log.info("Prescription saved with ID: {}", savedPrescription.getPrescriptionId());
+
+        // 4. Create and save prescription medications
+        List<PrescriptionMedication> prescriptionMedications = new ArrayList<>();
+
+        for (PrescriptionMedicationDTO medDto : request.getMedications()) {
+            // Validate medication exists
+            Optional<Medication> optMedication = medicationRepository.findById(medDto.getMedicationId());
+            if (optMedication.isEmpty()) {
+                log.error("Medication not found with ID: {}", medDto.getMedicationId());
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            }
+            Medication medication = optMedication.get();
+
+            PrescriptionMedication prescriptionMedication = new PrescriptionMedication();
+            prescriptionMedication.setPrescription(savedPrescription);
+            prescriptionMedication.setMedication(medication);
+            prescriptionMedication.setDosage(medDto.getDosage());
+            prescriptionMedication.setFrequency(medDto.getFrequency());
+            prescriptionMedication.setDurationDays(medDto.getDurationDays());
+            prescriptionMedication.setQuantity(medDto.getQuantity());
+            prescriptionMedication.setInstructions(medDto.getInstructions());
+            prescriptionMedication.setCreatedAt(now);
+
+            prescriptionMedications.add(prescriptionMedication);
+        }
+
+        List<PrescriptionMedication> savedMedications =
+                prescriptionMedicationRepository.saveAll(prescriptionMedications);
+
+        log.info("Saved {} medications for prescription ID: {}",
+                savedMedications.size(), savedPrescription.getPrescriptionId());
+
+        // 5. Build and return response
+        PrescriptionResponse response = buildPrescriptionResponse(savedPrescription, savedMedications);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    private PrescriptionResponse buildPrescriptionResponse(
+            Prescription prescription,
+            List<PrescriptionMedication> medications) {
+
+        PrescriptionResponse response = new PrescriptionResponse();
+        response.setPrescriptionId(prescription.getPrescriptionId());
+        response.setPatientId(prescription.getPatient().getPatientId());
+
+        // Build patient name
+        String patientFirstName = prescription.getPatient().getUser().getFirstName();
+        String patientLastName = prescription.getPatient().getUser().getLastName();
+        response.setPatientName(patientFirstName + " " + patientLastName);
+
+        response.setDoctorId(prescription.getDoctor().getDoctorId());
+
+        // Build doctor name
+        String doctorFirstName = prescription.getDoctor().getUser().getFirstName();
+        String doctorLastName = prescription.getDoctor().getUser().getLastName();
+        response.setDoctorName(doctorFirstName + " " + doctorLastName);
+
+        response.setPrescriptionDate(prescription.getPrescriptionDate());
+        response.setDiagnosis(prescription.getDiagnosis());
+        response.setInstructions(prescription.getInstructions());
+        response.setStatus(prescription.getStatus());
+
+        // Build medication responses
+        List<PrescriptionMedicationResponse> medicationResponses = new ArrayList<>();
+        for (PrescriptionMedication pm : medications) {
+            PrescriptionMedicationResponse medResponse = new PrescriptionMedicationResponse();
+            medResponse.setPrescriptionMedicationId(pm.getPrescriptionMedicationId());
+            medResponse.setMedicationId(pm.getMedication().getMedicationId());
+            medResponse.setMedicationName(pm.getMedication().getMedicationName());
+            medResponse.setDosage(pm.getDosage());
+            medResponse.setFrequency(pm.getFrequency());
+            medResponse.setDurationDays(pm.getDurationDays());
+            medResponse.setQuantity(pm.getQuantity());
+            medResponse.setInstructions(pm.getInstructions());
+            medicationResponses.add(medResponse);
+        }
+
+        response.setMedications(medicationResponses);
+        return response;
     }
 }
