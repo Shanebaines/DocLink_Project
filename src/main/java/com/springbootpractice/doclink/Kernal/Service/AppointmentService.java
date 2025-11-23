@@ -1,15 +1,15 @@
 package com.springbootpractice.doclink.Kernal.Service;
 
 import com.springbootpractice.doclink.Dealer.AppointmentRepository;
-import com.springbootpractice.doclink.Dealer.PatientRepository;
 import com.springbootpractice.doclink.Dealer.DoctorTimeSlotRepository;
+import com.springbootpractice.doclink.Dealer.PatientRepository;
 import com.springbootpractice.doclink.Kernal.Entity.Appointment;
 import com.springbootpractice.doclink.Kernal.Entity.Patient;
 import com.springbootpractice.doclink.Kernal.Enums.AppointmentStatusType;
 import com.springbootpractice.doclink.Kernal.Relations.Doctor_time_slots;
 import com.springbootpractice.doclink.Listner.Dto.Request.CreateAppointmentRequestDto;
-import com.springbootpractice.doclink.Listner.Dto.Request.patientSeatDto;
 import com.springbootpractice.doclink.Listner.Dto.Request.UpdateStatusRequestDto;
+import com.springbootpractice.doclink.Listner.Dto.Request.patientSeatDto;
 import com.springbootpractice.doclink.Listner.Dto.Response.seatDto;
 import com.springbootpractice.doclink.Listner.Dto.Response.seatViewDto;
 import com.springbootpractice.doclink.Listner.Dto.Response.viewAppointmentsDto;
@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -43,7 +44,7 @@ public class AppointmentService {
         Doctor_time_slots timeSlot = doctorTimeSlotRepository.findById(requestDto.getTimeSlotId())
                 .orElseThrow(() -> new IllegalArgumentException("Time Slot not found with ID: " + requestDto.getTimeSlotId()));
 
-        // Check for double booking of the same seat on the same day for the same slot
+        // CHANGE: Added underscore to match your Repository
         List<Appointment> existingAppointments = appointmentRepository.findAllByTimeSlot_IdAndAppointmentDate(
                 requestDto.getTimeSlotId(), requestDto.getAppointmentDate());
 
@@ -117,19 +118,23 @@ public class AppointmentService {
      */
     private viewAppointmentsDto toViewAppointmentsDto(Appointment appointment) {
         viewAppointmentsDto dto = new viewAppointmentsDto();
+        Doctor_time_slots timeSlot = appointment.getTimeSlot();
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
 
-        dto.setHospitalId(appointment.getTimeSlot().getHospital().getHospitalId());
-        dto.setHospitalName(appointment.getTimeSlot().getHospital().getHospitalName());
-        dto.setDoctorId(appointment.getTimeSlot().getDoctor().getDoctorId());
+        dto.setHospitalId(timeSlot.getHospital().getHospitalId());
+        dto.setHospitalName(timeSlot.getHospital().getHospitalName());
+        dto.setDoctorId(timeSlot.getDoctor().getDoctorId());
 
-        String doctorName = appointment.getTimeSlot().getDoctor().getUser().getFirstName() + " " +
-                appointment.getTimeSlot().getDoctor().getUser().getLastName();
+        String doctorName = timeSlot.getDoctor().getUser().getFirstName() + " " +
+                timeSlot.getDoctor().getUser().getLastName();
         dto.setDoctorName(doctorName);
 
         dto.setSeatNumber(appointment.getSeatNumber());
-        dto.setTimeSlot(appointment.getTimeSlot().getStartTime() + " - " + appointment.getTimeSlot().getEndTime());
+        dto.setTimeSlot(timeSlot.getStartTime().format(timeFormatter) + " - " + timeSlot.getEndTime().format(timeFormatter));
         dto.setAvailableTime(appointment.getAppointmentDate().atStartOfDay());
-        dto.setDayOfWeek(appointment.getTimeSlot().getDayOfWeek());
+        dto.setDayOfWeek(timeSlot.getDayOfWeek());
+
+        // Matches your DTO field name
         dto.setAppointmentStatus(appointment.getStatus());
         return dto;
     }
@@ -140,24 +145,23 @@ public class AppointmentService {
     @Transactional
     public Appointment updateAppointmentStatusByDoctor(@Valid patientSeatDto requestDto,
                                                        AppointmentStatusType appointmentStatus) {
-        // Validate that only completed or not_completed can be set by doctor
         if (appointmentStatus != AppointmentStatusType.completed &&
-                appointmentStatus != AppointmentStatusType.not_completed) {
+                appointmentStatus != AppointmentStatusType.no_show) {
             throw new IllegalArgumentException(
-                    "Doctor can only mark appointments as 'completed' or 'not_completed'. Received: " + appointmentStatus);
+                    "Doctor can only mark appointments as 'completed' or 'no_show'. Received: " + appointmentStatus);
         }
 
         Long slotId = requestDto.getSlot_id();
         LocalDate date = requestDto.getAppointment_date();
         Integer seat = requestDto.getSeat_number();
 
+        // CHANGE: Added underscore to match your Repository
         Appointment appointment = appointmentRepository
                 .findByTimeSlot_IdAndAppointmentDateAndSeatNumber(slotId, date, seat)
                 .orElseThrow(() -> new IllegalArgumentException(
                         String.format("No appointment found for slot=%d, date=%s, seat=%d",
                                 slotId, date, seat)));
 
-        // Validate current status
         if (appointment.getStatus() == AppointmentStatusType.cancelled) {
             throw new IllegalStateException("Cannot update a cancelled appointment.");
         }
@@ -175,6 +179,7 @@ public class AppointmentService {
 
     @Transactional(readOnly = true)
     public ResponseEntity<seatViewDto> viewSeat(patientSeatDto request) {
+        // CHANGE: Added underscore to match your Repository
         Appointment appointment = appointmentRepository
                 .findByTimeSlot_IdAndAppointmentDateAndSeatNumber(
                         request.getSlot_id(),
@@ -185,9 +190,11 @@ public class AppointmentService {
                                 request.getSlot_id(), request.getAppointment_date(), request.getSeat_number())));
 
         AppointmentStatusType status = appointment.getStatus();
+
+        // Allow 'no_show' (which you map to 'not_completed' in some contexts) to be viewed
         if (!(status == AppointmentStatusType.completed ||
                 status == AppointmentStatusType.scheduled ||
-                status == AppointmentStatusType.not_completed)) {// Allow 'no_show' too
+                status == AppointmentStatusType.no_show)) {
             return ResponseEntity.notFound().build();
         }
 

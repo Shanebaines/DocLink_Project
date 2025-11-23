@@ -16,15 +16,18 @@ import java.util.List;
 public class ScheduleController {
     private final ScheduleService scheduleService;
 
-    @GetMapping("/{slotId}/dates") //tested
+    @GetMapping("/{slotId}/dates") // tested
     public ResponseEntity<List<LocalDate>> upcomingDates(@PathVariable Long slotId) {
         return scheduleService.upcomingDates(slotId);
     }
 
-    @GetMapping("/{slotId}/viewSlot") //tested
+    @GetMapping("/{slotId}/viewSlot") // tested
     public ResponseEntity<ViewSlotDto> viewSlot(
             @PathVariable Long slotId,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)LocalDate date) {
-                return scheduleService.viewSlot(slotId, date);
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+
+        // === FIX: Pass 'true' as the 3rd argument ===
+        // 'true' = This is the Patient View (Show Doctor Name, Hide Hospital ID)
+        return scheduleService.viewSlot(slotId, date, true);
     }
 }

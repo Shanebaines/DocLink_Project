@@ -6,6 +6,7 @@ import com.springbootpractice.doclink.Kernal.Entity.Appointment;
 import com.springbootpractice.doclink.Kernal.Relations.Doctor_time_slots;
 import com.springbootpractice.doclink.Listner.Dto.Response.ViewSlotDto;
 import com.springbootpractice.doclink.Listner.Dto.Response.seatDto;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -14,8 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map; // <--- New Import
-import java.util.function.Function; // <--- New Import
+import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -28,54 +29,73 @@ public class ScheduleService {
     private final AppointmentRepository appointmentRepository;
     private final DoctorTimeSlotRepository doctorTimeSlotRepository;
 
-    public ResponseEntity<ViewSlotDto> viewSlot(Long slotId, LocalDate date) {
+    /**
+     * Unified method to view a slot.
+     * Uses 'isPatientView' to determine which specific fields to populate.
+     */
+    public ResponseEntity<ViewSlotDto> viewSlot(Long slotId, LocalDate date, boolean isPatientView) {
         Doctor_time_slots timeSlot = doctorTimeSlotRepository.findById(slotId).orElse(null);
         if (timeSlot == null) {
             return ResponseEntity.notFound().build();
         }
 
-        // === CHANGE 1: Use a MAP instead of a Set ===
-        // This maps the Seat Number -> The actual Appointment Object
-        // So we can access the status later.
+        // 1. Fetch all appointments for this slot/date and map them by Seat Number
+        // Using 'findAllByTimeSlot_IdAndAppointmentDate' (with underscore) to match your Repository
         Map<Integer, Appointment> bookedAppointments = appointmentRepository.findAllByTimeSlot_IdAndAppointmentDate(slotId, date)
                 .stream()
                 .collect(Collectors.toMap(Appointment::getSeatNumber, Function.identity()));
 
-        // === CHANGE 2: Update the loop logic ===
+        // 2. Build the list of ALL seats (1 to Total)
         List<seatDto> allSeats = IntStream.rangeClosed(1, timeSlot.getTotalSeats())
                 .mapToObj(seatNum -> {
                     seatDto seat = new seatDto();
                     seat.setSeatNumber(seatNum);
 
-                    // If the map contains the seat number, get the REAL status from the appointment
                     if (bookedAppointments.containsKey(seatNum)) {
-                        Appointment apt = bookedAppointments.get(seatNum);
-                        seat.setStatus(apt.getStatus()); // <--- DYNAMIC STATUS (scheduled, completed, no_show)
+                        // If booked, use the REAL status (scheduled, completed, no_show)
+                        seat.setStatus(bookedAppointments.get(seatNum).getStatus());
                     } else {
-                        seat.setStatus(null); // Available
+                        // If not booked, status is null (Available)
+                        seat.setStatus(null);
                     }
                     return seat;
                 })
                 .collect(Collectors.toList());
 
+        // 3. Build the Response DTO
+        ViewSlotDto dto = new ViewSlotDto();
 
-        ViewSlotDto viewSlotDto = new ViewSlotDto();
-        viewSlotDto.setDoctorName(timeSlot.getDoctor().getUser().getFirstName() + " " + timeSlot.getDoctor().getUser().getLastName());
-        viewSlotDto.setHospitalName(timeSlot.getHospital().getHospitalName());
-        viewSlotDto.setDate(date);
+        // -- Common Fields --
+        dto.setSlotId(timeSlot.getId());
+        dto.setHospitalName(timeSlot.getHospital().getHospitalName());
+        dto.setTotalSeats(timeSlot.getTotalSeats());
+        dto.setTimePeriod(timeSlot.getStartTime().toString() + " - " + timeSlot.getEndTime().toString());
+        dto.setSeats(allSeats);
 
-        // Force availability to TRUE as discussed
-        viewSlotDto.setAvailability(true);
+        // We force availability to TRUE as per your database structure constraints
+        dto.setAvailability(true);
 
-        // Update free seats calculation to use the map size
-        viewSlotDto.setFreeSeats(timeSlot.getTotalSeats() - bookedAppointments.size());
-        viewSlotDto.setTotalSeats(timeSlot.getTotalSeats());
-        viewSlotDto.setTimePeriod(timeSlot.getStartTime().toString() + " - " + timeSlot.getEndTime().toString());
-        viewSlotDto.setSeats(allSeats);
+        // -- Conditional Fields Logic --
+        if (isPatientView) {
+            // PATIENT VIEW: Needs Doctor Name and Free Seat Count
+            dto.setDoctorName(timeSlot.getDoctor().getUser().getFirstName() + " " + timeSlot.getDoctor().getUser().getLastName());
+            dto.setDate(date);
+            dto.setFreeSeats(timeSlot.getTotalSeats() - bookedAppointments.size());
+            // hospitalId and dayOfWeek remain NULL (Hidden by @JsonInclude)
+        } else {
+            // DOCTOR VIEW: Needs Hospital ID and Day of Week
+            dto.setHospitalId(timeSlot.getHospital().getHospitalId());
+            dto.setDayOfWeek(timeSlot.getDayOfWeek());
+            dto.setDate(date);
+            // doctorName and freeSeats remain NULL (Hidden by @JsonInclude)
+        }
 
-        return ResponseEntity.ok(viewSlotDto);
+        return ResponseEntity.ok(dto);
     }
 
+    /**
+     * Helper to get upcoming dates for the dropdown
+     */
     public ResponseEntity<List<LocalDate>> upcomingDates(Long slotId) {
         Doctor_time_slots slots = doctorTimeSlotRepository.findById(slotId)
                 .orElse(null);
@@ -88,7 +108,7 @@ public class ScheduleService {
         LocalDate today = LocalDate.now();
 
         List<LocalDate> upcomingDates = Stream.iterate(today, date -> date.plusDays(1))
-                .limit(4 * 7)
+                .limit(4 * 7) // 4 weeks
                 .filter(date -> date.getDayOfWeek() == dayOfWeek)
                 .collect(Collectors.toList());
 
