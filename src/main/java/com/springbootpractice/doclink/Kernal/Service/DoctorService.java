@@ -231,7 +231,6 @@ public class DoctorService {
         record.setSymptoms(createDto.getSymptoms());
         record.setDiagnosis(createDto.getDiagnosis());
         record.setTreatment(createDto.getTreatment());
-        record.setNotes(createDto.getNotes());
         record.setVitalSigns(createDto.getVitalSigns());
 
         // Set timestamps
@@ -258,7 +257,6 @@ public class DoctorService {
         dto.setSymptoms(record.getSymptoms());
         dto.setDiagnosis(record.getDiagnosis());
         dto.setTreatment(record.getTreatment());
-        dto.setNotes(record.getNotes());
         dto.setVitalSigns(record.getVitalSigns());
         dto.setCreatedAt(record.getCreatedAt());
         dto.setUpdatedAt(record.getUpdatedAt());
