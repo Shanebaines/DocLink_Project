@@ -271,7 +271,7 @@ public class DoctorService {
         log.info("Creating prescription for patient ID: {} by doctor ID: {}",
                 request.getPatientId(), request.getDoctorId());
 
-        // 1. Validate patient exists
+        // Validate patient exists
         Optional<Patient> optPatient = patientRepository.findById(request.getPatientId());
         if (optPatient.isEmpty()) {
             log.error("Patient not found with ID: {}", request.getPatientId());
@@ -279,7 +279,7 @@ public class DoctorService {
         }
         Patient patient = optPatient.get();
 
-        // 2. Validate doctor exists
+        // Validate doctor exists
         Optional<Doctor> optDoctor = doctorRepository.findById(request.getDoctorId());
         if (optDoctor.isEmpty()) {
             log.error("Doctor not found with ID: {}", request.getDoctorId());
@@ -287,12 +287,12 @@ public class DoctorService {
         }
         Doctor doctor = optDoctor.get();
 
-        // 3. Create and save prescription
+        // Create and save prescription
         Prescription prescription = new Prescription();
         prescription.setPatient(patient);
         prescription.setDoctor(doctor);
 
-        // Set prescription date - use provided date or current date
+        // Set prescription date
         prescription.setPrescriptionDate(
                 request.getPrescriptionDate() != null
                         ? request.getPrescriptionDate()
@@ -310,7 +310,7 @@ public class DoctorService {
         Prescription savedPrescription = prescriptionRepository.save(prescription);
         log.info("Prescription saved with ID: {}", savedPrescription.getPrescriptionId());
 
-        // 4. Create and save prescription medications
+        // Create and save prescription medications
         List<PrescriptionMedication> prescriptionMedications = new ArrayList<>();
 
         for (PrescriptionMedicationDTO medDto : request.getMedications()) {
@@ -341,7 +341,7 @@ public class DoctorService {
         log.info("Saved {} medications for prescription ID: {}",
                 savedMedications.size(), savedPrescription.getPrescriptionId());
 
-        // 5. Build and return response
+        // Build and return response
         PrescriptionResponse response = buildPrescriptionResponse(savedPrescription, savedMedications);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
