@@ -42,7 +42,7 @@ public class MedicalRecord {
     private String treatment;
 
     @Column(columnDefinition = "TEXT")
-    private String notes;
+    private String Recommendation;
 
     @Column(name = "vital_signs", columnDefinition = "JSONB")
     @JdbcTypeCode(SqlTypes.JSON) // Explicit type casting is used
