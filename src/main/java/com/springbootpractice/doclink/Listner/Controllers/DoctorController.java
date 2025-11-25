@@ -80,16 +80,4 @@ public class DoctorController {
         return doctorService.getSpecializations();
     }
 
-
-    @PostMapping("/createMedicalRecord")
-    public ResponseEntity<MedicalRecordDto> createMedicalRecord(
-            @RequestBody CreateMedicalRecordDto createDto) {
-        return doctorService.createMedicalRecord(createDto);
-    }
-
-    @PostMapping("/createPrescription")
-    public ResponseEntity<PrescriptionResponse> createPrescription(
-            @RequestBody @Valid CreatePrescriptionRequest request) {
-        return doctorService.createPrescription(request);
-    }
 }
