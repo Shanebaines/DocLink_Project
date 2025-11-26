@@ -6,10 +6,14 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "prescription_medications")
-@Data @NoArgsConstructor @AllArgsConstructor
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class PrescriptionMedication {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "prescription_medication_id")
     private Long prescriptionMedicationId;
 
@@ -34,5 +38,9 @@ public class PrescriptionMedication {
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
-}
 
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+    }
+}

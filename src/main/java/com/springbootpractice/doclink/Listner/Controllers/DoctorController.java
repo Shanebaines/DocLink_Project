@@ -2,10 +2,7 @@ package com.springbootpractice.doclink.Listner.Controllers;
 
 import java.util.List;
 
-import com.springbootpractice.doclink.Listner.Dto.Request.CreateMedicalRecordDto;
-import com.springbootpractice.doclink.Listner.Dto.Request.CreatePrescriptionRequest;
 import com.springbootpractice.doclink.Listner.Dto.Response.*;
-import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

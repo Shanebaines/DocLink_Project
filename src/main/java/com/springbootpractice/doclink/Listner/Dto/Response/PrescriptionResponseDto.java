@@ -1,20 +1,22 @@
 package com.springbootpractice.doclink.Listner.Dto.Response;
 
-import lombok.Data;
 import com.springbootpractice.doclink.Kernal.Enums.PrescriptionStatusType;
+import lombok.Data;
+import lombok.Builder;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
-public class PrescriptionResponse {
-    private Long prescriptionId;
-    private Long patientId;
-    private String patientName;
-    private Long doctorId;
-    private String doctorName;
+@Builder
+public class PrescriptionResponseDto {
+
+    private Long prescriptionId; // Same as medicalRecordId
     private LocalDate prescriptionDate;
     private String diagnosis;
     private String instructions;
     private PrescriptionStatusType status;
-    private List<PrescriptionMedicationResponse> medications;
+    private List<PrescriptionMedicationResponseDto> medications;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

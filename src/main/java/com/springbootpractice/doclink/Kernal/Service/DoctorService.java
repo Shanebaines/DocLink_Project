@@ -2,25 +2,17 @@ package com.springbootpractice.doclink.Kernal.Service;
 
 import com.springbootpractice.doclink.Dealer.*;
 import com.springbootpractice.doclink.Kernal.Entity.*;
-import com.springbootpractice.doclink.Kernal.Enums.PrescriptionStatusType;
 import com.springbootpractice.doclink.Kernal.Relations.Doctor_time_slots;
 import com.springbootpractice.doclink.Kernal.Relations.Doctors_in_Hospital;
-import com.springbootpractice.doclink.Listner.Dto.Request.CreateMedicalRecordDto;
-import com.springbootpractice.doclink.Listner.Dto.Request.CreatePrescriptionRequest;
-import com.springbootpractice.doclink.Listner.Dto.Request.PrescriptionMedicationDTO;
 import com.springbootpractice.doclink.Listner.Dto.Response.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.*;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
