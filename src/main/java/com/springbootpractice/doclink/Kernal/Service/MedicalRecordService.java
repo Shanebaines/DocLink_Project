@@ -4,6 +4,8 @@ import com.springbootpractice.doclink.Dealer.*;
 import com.springbootpractice.doclink.Kernal.Entity.*;
 import com.springbootpractice.doclink.Kernal.Enums.PrescriptionStatusType;
 import com.springbootpractice.doclink.Kernal.Relations.MedicalRecord;
+import com.springbootpractice.doclink.Kernal.Relations.PrescriptionToken;
+import com.springbootpractice.doclink.Kernal.Util.TokenGenerator;
 import com.springbootpractice.doclink.Listner.Dto.Request.*;
 import com.springbootpractice.doclink.Listner.Dto.Response.*;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -31,6 +34,7 @@ public class MedicalRecordService {
     private final PrescriptionRepository prescriptionRepository;
     private final MedicationRepository medicationRepository;
     private final PrescriptionMedicationRepository prescriptionMedicationRepository;
+    private final PrescriptionTokenRepository prescriptionTokenRepository;
 
     /**
      * Creates a medical record with optional medical report and/or prescription
@@ -248,6 +252,19 @@ public class MedicalRecordService {
             prescriptionMedicationRepository.save(prescriptionMedication);
             savedPrescription.getPrescriptionMedications().add(prescriptionMedication);
         }
+
+        // Generate and store token
+        String tokenValue = TokenGenerator.generateReadableToken();
+        PrescriptionToken token = PrescriptionToken.builder()
+                .token(tokenValue)
+                .prescription(savedPrescription)
+                .expiresAt(LocalDateTime.now().plusDays(1))
+                .active(true)
+                .build();
+
+        prescriptionTokenRepository.save(token);
+
+        log.info("Generated token '{}' for prescription ID: {}", tokenValue, savedPrescription.getPrescriptionId());
 
         return ResponseEntity.ok(savedPrescription);
     }
