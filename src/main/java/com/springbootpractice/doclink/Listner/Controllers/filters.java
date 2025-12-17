@@ -1,6 +1,6 @@
 package com.springbootpractice.doclink.Listner.Controllers;
 
-import com.springbootpractice.doclink.Kernal.Service.filterService;
+import com.springbootpractice.doclink.Kernel.Service.filterService;
 import com.springbootpractice.doclink.Listner.Dto.Response.WorkPLaceDto;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;

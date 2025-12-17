@@ -1,6 +1,6 @@
 package com.springbootpractice.doclink.Dealer;
 
-import com.springbootpractice.doclink.Kernal.Relations.MedicalRecord;
+import com.springbootpractice.doclink.Kernel.Relations.MedicalRecord;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

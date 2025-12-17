@@ -1,6 +1,6 @@
 package com.springbootpractice.doclink.Listner.Controllers;
 
-import com.springbootpractice.doclink.Kernal.Service.MedicalRecordService;
+import com.springbootpractice.doclink.Kernel.Service.MedicalRecordService;
 import com.springbootpractice.doclink.Listner.Dto.Request.*;
 import com.springbootpractice.doclink.Listner.Dto.Response.*;
 import jakarta.validation.Valid;
