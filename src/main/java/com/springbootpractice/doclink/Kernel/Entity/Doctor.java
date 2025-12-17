@@ -2,7 +2,8 @@ package com.springbootpractice.doclink.Kernel.Entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 @Entity
 @Table(name = "doctors",
         uniqueConstraints = @UniqueConstraint(name = "uk_doctor_license", columnNames = "license_number"),
@@ -39,5 +40,22 @@ public class Doctor {
     private java.math.BigDecimal consultationFee;*/
 
     @Column(name = "availability_schedule", columnDefinition = "JSONB")
+    @JdbcTypeCode(SqlTypes.JSON)
     private String availabilitySchedule;
+
+    // --- UPDATED FIELD ---
+    // Renamed from 'rating' to 'averageRating' to match your API JSON
+    private Double averageRating;
+
+    // --- UPDATED GETTERS/SETTERS ---
+    // (Note: Lombok's @Data actually generates these for you, so you can delete
+    // the code below if you want. But if you keep it, it must match the new name.)
+
+    public Double getAverageRating() {
+        return averageRating;
+    }
+
+    public void setAverageRating(Double averageRating) {
+        this.averageRating = averageRating;
+    }
 }

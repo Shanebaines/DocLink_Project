@@ -16,4 +16,5 @@ public class ViewDoctorDto {
     private String email;
     private String address;
     private List<WorkPLaceDto> workPlaces;
+    private Double averageRating;
 }

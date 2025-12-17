@@ -7,15 +7,21 @@ import com.springbootpractice.doclink.Kernel.Relations.Doctors_in_Hospital;
 import com.springbootpractice.doclink.Listner.Dto.Response.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+// Check your package name in RatingUtils.java first!
+// It should likely be: package com.springbootpractice.doclink.Util;
+
+import com.springbootpractice.doclink.Kernel.Util.RatingUtils;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +34,8 @@ public class DoctorService {
 
     private final MedicalRecordRepository medicalRecordRepository;
     private final PatientRepository patientRepository;
+    @Autowired  // <--- ADD THIS
+    private FeedbackRepository feedbackRepository;
 
     private final PrescriptionRepository prescriptionRepository;
     private final PrescriptionMedicationRepository prescriptionMedicationRepository;
@@ -50,6 +58,7 @@ public class DoctorService {
         dto.setPhoneNumber(doctor.getUser().getPhoneNumber());
         dto.setEmail(doctor.getUser().getEmail());
         dto.setAddress(doctor.getUser().getAddress());
+        dto.setAverageRating(doctor.getAverageRating());
 
         List<WorkPLaceDto> workPlaces = viewWorkPlaces(id).getBody();
 
@@ -195,6 +204,24 @@ public class DoctorService {
 
     private String emptyToNull(String s) {
         return (s == null || s.trim().isEmpty()) ? null : s.trim();
+    }
+
+    public void updateDoctorRating(String doctorId) {
+        // 1. Fetch all ratings (Convert ID to Long here)
+        // NOTE: Ensure your FeedbackRepository has a method findRatingsByDoctorId(Long id)
+        List<Integer> ratingList = feedbackRepository.findRatingsByDoctorId(Long.parseLong(doctorId));
+
+        // 2. Use the Util function
+        double newAverage = RatingUtils.calculateAverageRating(ratingList);
+
+        // 3. Save the new average to the Doctor entity
+        // Convert ID to Long here as well
+        Doctor doctor = doctorRepository.findById(Long.parseLong(doctorId)).orElse(null);
+
+        if (doctor != null) {
+            doctor.setAverageRating(newAverage); // This will work after you update Doctor.java
+            doctorRepository.save(doctor);
+        }
     }
 
 }
