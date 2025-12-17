@@ -43,13 +43,9 @@ public class Doctor {
     @JdbcTypeCode(SqlTypes.JSON)
     private String availabilitySchedule;
 
-    // --- UPDATED FIELD ---
-    // Renamed from 'rating' to 'averageRating' to match your API JSON
+
     private Double averageRating;
 
-    // --- UPDATED GETTERS/SETTERS ---
-    // (Note: Lombok's @Data actually generates these for you, so you can delete
-    // the code below if you want. But if you keep it, it must match the new name.)
 
     public Double getAverageRating() {
         return averageRating;

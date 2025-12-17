@@ -16,7 +16,7 @@ public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
     @Query("SELECT AVG(f.rating) FROM Feedback f WHERE f.doctor.doctorId = :doctorId")
     Double getAverageRating(Long doctorId);
 
-    // vvv ADD THIS METHOD vvv
+
     @Query("SELECT f.rating FROM Feedback f WHERE f.doctor.doctorId = :doctorId")
     List<Integer> findRatingsByDoctorId(@Param("doctorId") Long doctorId);
 }
