@@ -15,6 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class MedicalRecordService {
     public final MedicalRecordRepository medicalRecordRepository;
 
-    public ResponseEntity<?> addMedicalRecord(CreateAppointmentRequestDto createAppointmentRequestDto) {
-    }
+//    public ResponseEntity<?> addMedicalRecord(CreateAppointmentRequestDto createAppointmentRequestDto) {
+//    }
 }

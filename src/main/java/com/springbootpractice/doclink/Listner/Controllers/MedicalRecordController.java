@@ -14,8 +14,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class MedicalRecordController {
     public final MedicalRecordService medicalRecordService;
 
-    @PostMapping("/addRecord")
-    ResponseEntity<?> addMedicalRecord(CreateAppointmentRequestDto createAppointmentRequestDto) {
-        return medicalRecordService.addMedicalRecord(createAppointmentRequestDto);
-    }
+//    @PostMapping("/addRecord")
+//    ResponseEntity<?> addMedicalRecord(CreateAppointmentRequestDto createAppointmentRequestDto) {
+//        return medicalRecordService.addMedicalRecord(createAppointmentRequestDto);
+//    }
 }
