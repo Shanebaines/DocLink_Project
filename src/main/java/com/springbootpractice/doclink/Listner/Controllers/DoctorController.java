@@ -2,14 +2,11 @@ package com.springbootpractice.doclink.Listner.Controllers;
 
 import java.util.List;
 
-import com.springbootpractice.doclink.Listner.Dto.Request.CreateMedicalRecordDto;
-import com.springbootpractice.doclink.Listner.Dto.Request.CreatePrescriptionRequest;
 import com.springbootpractice.doclink.Listner.Dto.Response.*;
-import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.springbootpractice.doclink.Kernal.Service.DoctorService;
+import com.springbootpractice.doclink.Kernel.Service.DoctorService;
 
 import lombok.AllArgsConstructor;
 
@@ -80,16 +77,4 @@ public class DoctorController {
         return doctorService.getSpecializations();
     }
 
-
-    @PostMapping("/createMedicalRecord")
-    public ResponseEntity<MedicalRecordDto> createMedicalRecord(
-            @RequestBody CreateMedicalRecordDto createDto) {
-        return doctorService.createMedicalRecord(createDto);
-    }
-
-    @PostMapping("/createPrescription")
-    public ResponseEntity<PrescriptionResponse> createPrescription(
-            @RequestBody @Valid CreatePrescriptionRequest request) {
-        return doctorService.createPrescription(request);
-    }
 }

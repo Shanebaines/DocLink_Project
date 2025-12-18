@@ -1,8 +1,8 @@
 package com.springbootpractice.doclink.Listner.Controllers;
 
-import com.springbootpractice.doclink.Kernal.Entity.Appointment;
-import com.springbootpractice.doclink.Kernal.Enums.AppointmentStatusType;
-import com.springbootpractice.doclink.Kernal.Service.AppointmentService;
+import com.springbootpractice.doclink.Kernel.Entity.Appointment;
+import com.springbootpractice.doclink.Kernel.Enums.AppointmentStatusType;
+import com.springbootpractice.doclink.Kernel.Service.AppointmentService;
 import com.springbootpractice.doclink.Listner.Dto.Request.CreateAppointmentRequestDto;
 import com.springbootpractice.doclink.Listner.Dto.Request.patientSeatDto;
 import com.springbootpractice.doclink.Listner.Dto.Request.UpdateStatusRequestDto;
