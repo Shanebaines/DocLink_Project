@@ -1,6 +1,6 @@
 package com.springbootpractice.doclink.Dealer;
 
-import com.springbootpractice.doclink.Kernel.Relations.Doctor_availability;
+import com.springbootpractice.doclink.Kernal.Relations.Doctor_availability;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

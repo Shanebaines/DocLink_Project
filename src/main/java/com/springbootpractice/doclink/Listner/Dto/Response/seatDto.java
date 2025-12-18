@@ -1,6 +1,6 @@
 package com.springbootpractice.doclink.Listner.Dto.Response;
 
-import com.springbootpractice.doclink.Kernel.Enums.AppointmentStatusType;
+import com.springbootpractice.doclink.Kernal.Enums.AppointmentStatusType;
 import lombok.Data;
 
 @Data

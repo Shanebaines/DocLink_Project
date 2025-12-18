@@ -6,12 +6,6 @@ select * from users;
 select * from hospitals;
 select * from hospital_doctors;
 select * from doctor_availability;
-select * from medications;
-select * from medical_records;
-select * from medical_reports;
-select * from prescriptions;
-select * from prescription_medications;
-select * from prescription_tokens;
 
 INSERT INTO users
 (username, password, first_name, last_name, phone_number, email, address, gps_location,
