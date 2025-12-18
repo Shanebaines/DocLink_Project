@@ -2,6 +2,8 @@ package com.springbootpractice.doclink.Kernal.Entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "doctors",
@@ -27,6 +29,9 @@ public class Doctor {
 
     private String specialization;
 
+    @Column(name = "patient_count", nullable = false)
+    private int patientCount = 0;
+
     @Column(name = "license_number", nullable = false, unique = true, length = 50)
     private String licenseNumber;
 
@@ -39,5 +44,6 @@ public class Doctor {
     private java.math.BigDecimal consultationFee;*/
 
     @Column(name = "availability_schedule", columnDefinition = "JSONB")
+    @JdbcTypeCode(SqlTypes.JSON)
     private String availabilitySchedule;
 }

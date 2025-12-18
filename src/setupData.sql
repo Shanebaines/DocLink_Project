@@ -1,5 +1,3 @@
--- Give \i path-of-your-file-structure-to setupData.sql
-
 select * from patients;
 select * from doctor_time_slots;
 select * from appointments;
@@ -36,9 +34,9 @@ VALUES
  '2023-05-10', 'doctor', 'female', '2023-05-10 14:00:00', '2023-05-10 14:00:00');
 
 INSERT INTO doctors
-(image, user_id, specialization, license_number, years_experience, qualification, availability_schedule)
+(image, user_id, specialization, patient_count, license_number, years_experience, qualification, availability_schedule)
 VALUES
-    ('https://example.com/images/dr_smith.jpg', 3, 'Cardiology', 'LIC-12345-A', 12,
+    ('https://example.com/images/dr_smith.jpg', 3, 'Cardiology', 0, 'LIC-12345-A', 12,
      'MD, Fellow of the American College of Cardiology',
      '{
        "monday": "09:00-16:00",
@@ -48,7 +46,7 @@ VALUES
        "friday": "10:00-15:00"
      }'),
 
-    ('https://example.com/images/dr_jones.jpg', 4, 'Pediatrics', 'LIC-67890-B', 8,
+    ('https://example.com/images/dr_jones.jpg', 4, 'Pediatrics', 0, 'LIC-67890-B', 8,
      'MD, Pediatric Specialist',
      '{
        "monday": "08:00-15:00",
@@ -58,7 +56,7 @@ VALUES
        "friday": "Closed"
      }'),
 
-    ('https://example.com/images/dr_chen.jpg', 5, 'Dermatology', 'LIC-54321-C', 15,
+    ('https://example.com/images/dr_chen.jpg', 5, 'Dermatology', 0, 'LIC-54321-C', 15,
      'MBBS, Diploma in Dermatology',
      '{
        "monday": "11:00-18:00",
@@ -235,7 +233,6 @@ VALUES
  'rescheduled', 'Extended rehab session', 'Doctor moved from Tuesday → Thursday.', 180.00,
  '2024-06-15 09:30:00', '2024-06-19 16:00:00');
 
-
  -- Medications
  INSERT INTO medications
  (medication_name, generic_name, price, description, manufacturer, created_at, updated_at)
@@ -285,3 +282,6 @@ VALUES
      NOW(),
      NOW()
  );
+
+
+
