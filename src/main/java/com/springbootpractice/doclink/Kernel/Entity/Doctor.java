@@ -46,4 +46,16 @@ public class Doctor {
     @Column(name = "availability_schedule", columnDefinition = "JSONB")
     @JdbcTypeCode(SqlTypes.JSON)
     private String availabilitySchedule;
+
+
+    private Double averageRating;
+
+
+    public Double getAverageRating() {
+        return averageRating;
+    }
+
+    public void setAverageRating(Double averageRating) {
+        this.averageRating = averageRating;
+    }
 }

@@ -4,10 +4,12 @@ import java.util.List;
 
 import com.springbootpractice.doclink.Listner.Dto.Request.CreateMedicalRecordDto;
 import com.springbootpractice.doclink.Listner.Dto.Request.CreatePrescriptionRequest;
+import com.springbootpractice.doclink.Kernel.Service.FeedbackService;
 import com.springbootpractice.doclink.Listner.Dto.Response.*;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.springbootpractice.doclink.Listner.Dto.Response.FeedbackViewDto;
 
 import com.springbootpractice.doclink.Kernel.Service.DoctorService;
 
@@ -19,6 +21,7 @@ import lombok.AllArgsConstructor;
 @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:5173", "http://localhost:5174"}) // adjust if needed
 public class DoctorController {
     public final DoctorService doctorService;
+    public final FeedbackService feedbackService;
 
     @GetMapping("/view") //tested
     public ResponseEntity<ViewDoctorDto> viewDoctor(@RequestParam Integer id) {
@@ -92,4 +95,10 @@ public class DoctorController {
             @RequestBody @Valid CreatePrescriptionRequest request) {
         return doctorService.createPrescription(request);
     }
+    @GetMapping("/{id}/feedbacks")
+    public ResponseEntity<List<FeedbackViewDto>> getDoctorFeedbacks(@PathVariable Long id) {
+        // Reuse the logic that hides patient names if anonymous
+        return feedbackService.getDoctorFeedback(id);
+    }
+
 }
