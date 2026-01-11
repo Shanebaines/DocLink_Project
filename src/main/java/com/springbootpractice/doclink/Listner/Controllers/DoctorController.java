@@ -9,7 +9,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.springbootpractice.doclink.Kernal.Service.DoctorService;
+import com.springbootpractice.doclink.Kernel.Service.DoctorService;
 
 import lombok.AllArgsConstructor;
 
