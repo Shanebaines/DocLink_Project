@@ -1,6 +1,6 @@
 package com.springbootpractice.doclink.Listner.Dto.Response;
 
-import com.springbootpractice.doclink.Kernel.Enums.GenderType;
+import com.springbootpractice.doclink.Kernal.Enums.GenderType;
 import lombok.Data;
 
 @Data

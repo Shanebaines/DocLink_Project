@@ -1,4 +1,4 @@
-package com.springbootpractice.doclink.Kernel.Entity;
+package com.springbootpractice.doclink.Kernal.Entity;
 
 import jakarta.persistence.*;
 import lombok.Data;

@@ -1,4 +1,4 @@
-package com.springbootpractice.doclink.Kernel.Util; // Check package name matches your folder
+package com.springbootpractice.doclink.Kernal.Util; // Check package name matches your folder
 
 import java.util.List;
 import java.math.BigDecimal;

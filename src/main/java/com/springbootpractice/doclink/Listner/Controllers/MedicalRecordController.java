@@ -1,6 +1,6 @@
 package com.springbootpractice.doclink.Listner.Controllers;
 
-import com.springbootpractice.doclink.Kernel.Service.MedicalRecordService;
+import com.springbootpractice.doclink.Kernal.Service.MedicalRecordService;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
