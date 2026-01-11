@@ -255,6 +255,81 @@
   background-color: #f3f4f6;
 }
 
+/* Top overlay on the map for showing selected doctor's profile summary */
+.map-doctor-overlay {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  right: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255,255,255,0.95);
+  padding: 10px 14px;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(17,24,39,0.12);
+  z-index: 1200;
+  border: 1px solid #e6e6e6;
+  min-width: 300px;
+}
+
+.map-doctor-avatar {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+.map-doctor-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  color: #111827;
+}
+
+.map-doctor-name {
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.map-doctor-special {
+  color: #059669;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.map-doctor-meta {
+  font-size: 12px;
+  color: #6b7280;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.meta-sep { opacity: 0.45; }
+
+.map-doctor-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+}
+
+.map-doctor-contact {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: #f3f4f6;
+  border-radius: 8px;
+  text-decoration: none;
+  color: #111827;
+  font-size: 16px;
+  border: 1px solid #e5e7eb;
+}
+
 .map {
   width: 100%;
   height: 100%;

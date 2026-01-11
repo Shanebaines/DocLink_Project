@@ -1,0 +1,124 @@
+/* PatientLanding.css - styles for the patient landing page hero, search, doctors and appointments */
+
+.patient-landing-page {
+  background: #f6f8fb; /* keep consistent with global */
+  color: #0f172a;
+  min-height: 100vh;
+}
+
+/* Hero */
+.hero {
+  background: linear-gradient(180deg, #f1fbff 0%, #eef7fb 100%);
+  padding: 56px 0 36px;
+  border-bottom: 1px solid rgba(15,23,42,0.04);
+}
+.hero .container {
+  text-align: center;
+}
+.hero-title {
+  font-size: clamp(34px, 6vw, 56px);
+  font-weight: 800;
+  margin: 0 0 8px;
+  letter-spacing: -0.02em;
+}
+.hero-subtitle {
+  color: #64748b;
+  margin: 0 0 20px;
+  font-size: 18px;
+}
+
+/* Search row */
+.search-row {
+  margin-top: 18px;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  align-items: center;
+}
+.search-input-wrap { position: relative; width: 560px; max-width: calc(100% - 140px); }
+.search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #94a3b8; }
+.search-input {
+  width: 100%;
+  height: 54px;
+  padding: 12px 16px 12px 44px;
+  border-radius: 12px;
+  border: 1px solid #e6eef6;
+  background: #ffffff;
+  font-size: 16px;
+  color: #0f172a;
+  box-shadow: 0 4px 20px rgba(15,23,42,0.03);
+}
+.search-input:focus { outline: none; border-color: #7dd3fc; box-shadow: 0 6px 24px rgba(59,130,246,0.08); }
+.search-btn {
+  height: 46px;
+  padding: 0 18px;
+  border-radius: 10px;
+  border: none;
+  background: #d0eefc; /* soft blue */
+  color: #0f172a;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(2,6,23,0.06);
+}
+
+/* Doctors grid */
+.doctors-section { padding: 28px 0 32px; }
+.doctors-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+}
+.doc-card {
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 6px 20px rgba(2,6,23,0.04);
+  display: flex;
+  flex-direction: column;
+}
+.doc-card-image {
+  height: 150px;
+  background-image: linear-gradient(180deg, #e6f5fa 0%, #f3f8fb 100%);
+}
+.doc-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.doc-card-body { padding: 16px; display:flex; flex-direction: column; gap:8px; flex:1; }
+.doc-name { margin: 0; font-size: 18px; font-weight: 700; }
+.doc-specialty { margin: 0; color: #6b7280; font-size: 14px; }
+.doc-actions { margin-top: auto; display:flex; gap:10px; }
+.btn { padding: 8px 12px; border-radius: 8px; cursor:pointer; border: none; font-weight: 700; display:inline-flex; align-items:center; justify-content:center; }
+.btn-book { background: linear-gradient(90deg,#0ea5e9,#0ea5e9); color:white; flex:1; padding:10px 14px; border-radius:10px; display:flex; align-items:center; justify-content:center; }
+
+/* Appointments */
+.appointments-section { background: linear-gradient(180deg,#f7fbfe 0,#f2f9ff 100%); padding: 48px 0 80px; margin-top: 12px; }
+.appointments-title { text-align:center; font-size:32px; margin: 0; font-weight:800; }
+.appointments-sub { text-align:center; color:#64748b; margin-top:8px; }
+.appointment-grid { margin-top: 28px; display:grid; gap:20px; grid-template-columns: 1fr; }
+.appointment-card {
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(2,6,23,0.04);
+  width: 100%;
+  border: 1px solid transparent;
+  -webkit-border-image: linear-gradient(90deg,#1e90ff,#11998e) 1;
+  border-image: linear-gradient(90deg,#1e90ff,#11998e) 1;
+}
+.appointment-doctor { margin: 0 0 6px; font-size: 18px; font-weight:700; }
+.appointment-hospital { margin: 0 0 8px; color:#64748b; }
+.appointment-meta { display:flex; gap:12px; color:#0f172a; margin-bottom: 12px; }
+.meta-item { background: #f8fafc; padding:6px 10px; border-radius:8px; font-size:13px; color:#065f46; }
+.appointment-actions { display:flex; justify-content:flex-start; }
+.btn-secondary { background:#d4f1e0; color:#065f46; border-radius:8px; padding:8px 12px; font-weight:700; border:none; cursor:pointer; }
+
+/* Small screens tweaks */
+@media (max-width: 760px) {
+  .search-row { flex-direction: column; gap: 10px; }
+  .search-input-wrap { width: 100%; max-width: 100%; }
+  .search-btn { width: 100%; }
+}
+

@@ -6,13 +6,12 @@ import com.springbootpractice.doclink.Dealer.DoctorTimeSlotRepository;
 import com.springbootpractice.doclink.Kernal.Entity.Appointment;
 import com.springbootpractice.doclink.Kernal.Relations.Doctor_time_slots;
 import com.springbootpractice.doclink.Listner.Dto.Response.ViewSlotDto;
-import com.springbootpractice.doclink.Listner.Dto.Response.seatsDto;
+import com.springbootpractice.doclink.Listner.Dto.Response.seatDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-// --- ADD ALL THESE IMPORTS ---
 import com.springbootpractice.doclink.Kernal.Enums.AppointmentStatusType;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -21,7 +20,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-// -----------------------------
 
 @Service
 @RequiredArgsConstructor
@@ -44,9 +42,9 @@ public class ScheduleService {
                 .collect(Collectors.toSet());
 
         // 2. Build a list of ALL seats (from 1 to totalSeats), marking their status
-        List<seatsDto> allSeats = IntStream.rangeClosed(1, timeSlot.getTotalSeats())
+        List<seatDto> allSeats = IntStream.rangeClosed(1, timeSlot.getTotalSeats())
                 .mapToObj(seatNum -> {
-                    seatsDto seat = new seatsDto();
+                    seatDto seat = new seatDto();
                     seat.setSeatNumber(seatNum);
                     // If the number is in our set of booked numbers, it's taken. Otherwise, it's available.
                     if (bookedSeatNumbers.contains(seatNum)) {

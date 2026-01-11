@@ -1,5 +1,6 @@
 package com.springbootpractice.doclink.Listner.Dto.Response;
 
+import com.springbootpractice.doclink.Kernel.Enums.AppointmentStatusType;
 import lombok.Data;
 
 import java.time.DayOfWeek;
@@ -15,4 +16,5 @@ public class viewAppointmentsDto {
     private String timeSlot;
     private LocalDateTime availableTime;
     private DayOfWeek dayOfWeek;
+    private AppointmentStatusType appointmentStatus;
 }

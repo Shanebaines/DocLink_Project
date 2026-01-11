@@ -1,6 +1,6 @@
 package com.springbootpractice.doclink.Listner.Controllers;
 
-import com.springbootpractice.doclink.Kernal.Service.ScheduleService;
+import com.springbootpractice.doclink.Kernel.Service.ScheduleService;
 import com.springbootpractice.doclink.Listner.Dto.Response.ViewSlotDto;
 import lombok.AllArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;

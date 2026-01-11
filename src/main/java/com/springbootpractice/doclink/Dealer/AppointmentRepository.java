@@ -1,11 +1,12 @@
 package com.springbootpractice.doclink.Dealer;
 
-import com.springbootpractice.doclink.Kernal.Entity.Appointment;
+import com.springbootpractice.doclink.Kernel.Entity.Appointment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface AppointmentRepository extends JpaRepository<Appointment, Long> {
@@ -15,4 +16,6 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
 
     // Method for the ScheduleService to find booked seats.
     List<Appointment> findAllByTimeSlot_IdAndAppointmentDate(Long slotId, LocalDate date);
+
+    Optional<Appointment> findByTimeSlot_IdAndAppointmentDateAndSeatNumber(Long slotId, LocalDate date, Integer seat);
 }

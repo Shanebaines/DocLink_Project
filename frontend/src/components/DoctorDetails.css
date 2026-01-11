@@ -1,0 +1,22 @@
+.doctor-details-card { background: #fff; padding: 14px; border-radius: 12px; box-shadow: 0 8px 30px rgba(2,6,23,0.04); }
+.details-top { display:flex; gap:40px; align-items:center; }
+.details-avatar img { width:150px; height:150px; object-fit:cover; border-radius:12px; }
+.details-main { flex:1; }
+.doctor-details-name { margin:0; font-size:18px; font-weight:800; }
+.doctor-details-specialty { color:#0f172a; opacity:0.8; margin-top:4px; }
+.doctor-details-qual { margin-top:6px; color:#6b7280; }
+.doctor-details-meta { margin-top:6px; font-size:13px; color:#059669; font-weight:700; }
+.details-contacts { display:flex; flex-direction:column; gap:6px; }
+.contact-pill { display:inline-block; padding:6px 8px; border-radius:8px; background:#f8fafc; color:#065f46; text-decoration:none; }
+.details-workplaces { margin-top:12px; }
+.workplace { padding:10px; border:1px solid #eef2f7; border-radius:8px; margin-bottom:10px; }
+.workplace-head { display:flex; justify-content:space-between; align-items:center; }
+.workplace-name { font-weight:700; }
+.workplace-address { color:#64748b; font-size:13px; }
+.workplace-meta { display:flex; gap:8px; align-items:center; }
+.btn-small { padding:6px 8px; border-radius:8px; border:none; cursor:pointer; background:#f3f4f6; }
+.btn-small.primary { background:#059669; color:white; }
+.slot-row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-top:1px dashed #eef2f7; }
+.slot-info { display:flex; gap:12px; align-items:center; }
+.slot-day { font-weight:700; }
+.slot-right { display:flex; gap:8px; align-items:center; }

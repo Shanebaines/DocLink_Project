@@ -2,13 +2,16 @@ package com.springbootpractice.doclink.Listner.Controllers;
 
 import java.util.List;
 
+import com.springbootpractice.doclink.Listner.Dto.Request.CreateMedicalRecordDto;
+import com.springbootpractice.doclink.Listner.Dto.Request.CreatePrescriptionRequest;
+import com.springbootpractice.doclink.Kernel.Service.FeedbackService;
+import com.springbootpractice.doclink.Listner.Dto.Response.*;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.springbootpractice.doclink.Listner.Dto.Response.FeedbackViewDto;
 
-import com.springbootpractice.doclink.Kernal.Service.DoctorService;
-import com.springbootpractice.doclink.Listner.Dto.Response.PagedResponse;
-import com.springbootpractice.doclink.Listner.Dto.Response.ViewDoctorDto;
-import com.springbootpractice.doclink.Listner.Dto.Response.ViewDoctorsDto;
+import com.springbootpractice.doclink.Kernel.Service.DoctorService;
 
 import lombok.AllArgsConstructor;
 
@@ -18,6 +21,7 @@ import lombok.AllArgsConstructor;
 @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:5173", "http://localhost:5174"}) // adjust if needed
 public class DoctorController {
     public final DoctorService doctorService;
+    public final FeedbackService feedbackService;
 
     @GetMapping("/view") //tested
     public ResponseEntity<ViewDoctorDto> viewDoctor(@RequestParam Integer id) {
@@ -26,6 +30,11 @@ public class DoctorController {
     @GetMapping("/viewAll") //tested
     public ResponseEntity<List<ViewDoctorsDto>> viewDoctors() {
         return doctorService.viewDoctors();
+    }
+
+    @GetMapping("/viewPlaces")
+    public ResponseEntity<List<WorkPLaceDto>> viewWorkPlaces(@RequestParam Long id) {
+        return doctorService.viewWorkPlaces(id);
     }
 
     // Existing: paged search (name or specialization)
@@ -73,4 +82,23 @@ public class DoctorController {
     public ResponseEntity<List<String>> specializations() {
         return doctorService.getSpecializations();
     }
+
+
+    @PostMapping("/createMedicalRecord")
+    public ResponseEntity<MedicalRecordDto> createMedicalRecord(
+            @RequestBody CreateMedicalRecordDto createDto) {
+        return doctorService.createMedicalRecord(createDto);
+    }
+
+    @PostMapping("/createPrescription")
+    public ResponseEntity<PrescriptionResponse> createPrescription(
+            @RequestBody @Valid CreatePrescriptionRequest request) {
+        return doctorService.createPrescription(request);
+    }
+    @GetMapping("/{id}/feedbacks")
+    public ResponseEntity<List<FeedbackViewDto>> getDoctorFeedbacks(@PathVariable Long id) {
+        // Reuse the logic that hides patient names if anonymous
+        return feedbackService.getDoctorFeedback(id);
+    }
+
 }

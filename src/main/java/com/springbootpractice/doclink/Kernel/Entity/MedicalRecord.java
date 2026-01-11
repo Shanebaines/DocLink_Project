@@ -2,6 +2,9 @@ package com.springbootpractice.doclink.Kernal.Entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -39,9 +42,10 @@ public class MedicalRecord {
     private String treatment;
 
     @Column(columnDefinition = "TEXT")
-    private String notes;
+    private String Recommendation;
 
     @Column(name = "vital_signs", columnDefinition = "JSONB")
+    @JdbcTypeCode(SqlTypes.JSON) // Explicit type casting is used
     private String vitalSigns;
 
     @Column(name = "created_at") private LocalDateTime createdAt;

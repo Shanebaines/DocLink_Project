@@ -14,5 +14,5 @@ public class ViewSlotDto {
     private Integer freeSeats;
     private Integer totalSeats;
     private String timePeriod;
-    private List<seatsDto> seats;
+    private List<seatDto> seats;
 }

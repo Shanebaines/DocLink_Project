@@ -1,7 +1,19 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useLocation, useParams, useNavigate } from "react-router-dom";
 import "./DoctorLocationMap.css";
+import DoctorDetails from '../components/DoctorDetails';
 
 function DoctorLocationMap() {
+  const params = useParams();
+  const location = useLocation();
+
+  // Determine doctor id coming from route param (/doctor/:id) or query string (?id=)
+  const routeIdFromPath = params?.id;
+  const qs = new URLSearchParams(location.search);
+  const routeIdFromQuery = qs.get('id');
+  const routeDoctorId = routeIdFromPath || routeIdFromQuery || null;
+  const navigate = useNavigate();
+
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const doctorMarkersRef = useRef([]);
@@ -30,6 +42,9 @@ function DoctorLocationMap() {
   
   // Expanded workplaces state (to track which workplace's slots are visible)
   const [expandedWorkplaces, setExpandedWorkplaces] = useState({});
+
+  // Helper: whether the page was opened from the landing (route provides a doctor id)
+  const isFromLanding = Boolean(routeDoctorId);
 
   // Fetch doctors from API
   useEffect(() => {
@@ -73,6 +88,47 @@ function DoctorLocationMap() {
     fetchPatients();
   }, []);
 
+  // If navigated with a doctor id (route param or query) pre-select that doctor
+  useEffect(() => {
+    if (!routeDoctorId) return;
+    const idNum = parseInt(routeDoctorId, 10);
+    if (!isFinite(idNum)) return;
+
+    if (allDoctors && allDoctors.length > 0) {
+      const found = allDoctors.find(d => Number(d.doctorId) === idNum);
+      if (found) {
+        setSelectedDoctorFromDropdown({ doctorId: found.doctorId, name: found.name });
+      } else {
+        setSelectedDoctorFromDropdown(prev => ({ ...prev, doctorId: idNum }));
+      }
+    } else {
+      setSelectedDoctorFromDropdown(prev => ({ ...prev, doctorId: idNum }));
+    }
+  }, [routeDoctorId, allDoctors]);
+
+  // If a `patientId` exists in localStorage assume the patient is logged in and fetch details
+  useEffect(() => {
+    const patientId = localStorage.getItem('patientId');
+    if (!patientId) return;
+    const fetchPatient = async () => {
+      try {
+        const resp = await fetch(`http://localhost:8080/patient/viewPatient?id=${patientId}`);
+        if (!resp.ok) throw new Error('Failed to fetch patient');
+        const data = await resp.json();
+        const gpsMatch = data.gpsLocation ? data.gpsLocation.match(/\(([^,]+),([^)]+)\)/) : null;
+        const patientWithCoords = {
+          ...data,
+          lat: gpsMatch ? parseFloat(gpsMatch[1]) : null,
+          lng: gpsMatch ? parseFloat(gpsMatch[2]) : null
+        };
+        setSelectedPatient(patientWithCoords);
+      } catch (e) {
+        console.warn('Could not load logged-in patient', e);
+      }
+    };
+    fetchPatient();
+  }, []);
+
   // Calculate distance between two coordinates (Haversine formula)
   const calculateDistance = (lat1, lng1, lat2, lng2) => {
     const R = 6371; // Earth's radius in kilometers
@@ -111,7 +167,7 @@ function DoctorLocationMap() {
     })).sort((a, b) => a.distance - b.distance);
   };
 
-  // Fetch doctor details when a doctor is selected
+  // Fetch doctor details when a doctor id changes
   useEffect(() => {
     const fetchDoctorDetails = async () => {
       if (!selectedDoctorFromDropdown.doctorId) {
@@ -122,15 +178,15 @@ function DoctorLocationMap() {
       try {
         setLoadingDoctorDetails(true);
         const response = await fetch(
-          `http://localhost:8080/doctor/view/${selectedDoctorFromDropdown.doctorId}`
+          `http://localhost:8080/doctor/view?id=${selectedDoctorFromDropdown.doctorId}`
         );
         if (!response.ok) {
           throw new Error("Failed to fetch doctor details");
         }
         const data = await response.json();
         setDoctorDetails(data);
-        const workplaces = data.workPlaces.map(workplace => {
-          const gpsMatch = workplace.gpsLocation.match(/\(([^,]+),([^)]+)\)/);
+        const workplaces = (data.workPlaces || []).map(workplace => {
+          const gpsMatch = workplace.gpsLocation ? workplace.gpsLocation.match(/\(([^,]+),([^)]+)\)/) : null;
           return {
             ...workplace,
             lat: gpsMatch ? parseFloat(gpsMatch[1]) : null,
@@ -385,245 +441,130 @@ function DoctorLocationMap() {
     }
   };
 
-  // SVG Icons
-  const MapPinIcon = ({ className, size = 16 }) => (
-    <svg
-      className={className}
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-      <circle cx="12" cy="10" r="3"></circle>
-    </svg>
-  );
-
-  const PhoneIcon = ({ className, size = 16 }) => (
-    <svg
-      className={className}
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-    </svg>
-  );
-
-  const BuildingIcon = ({ className, size = 16 }) => (
-    <svg
-      className={className}
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
-      <path d="M9 22v-4h6v4"></path>
-      <path d="M8 6h.01"></path>
-      <path d="M16 6h.01"></path>
-      <path d="M12 6h.01"></path>
-      <path d="M12 10h.01"></path>
-      <path d="M12 14h.01"></path>
-      <path d="M16 10h.01"></path>
-      <path d="M16 14h.01"></path>
-      <path d="M8 10h.01"></path>
-      <path d="M8 14h.01"></path>
-    </svg>
-  );
-
-  const UserIcon = ({ className, size = 16 }) => (
-    <svg
-      className={className}
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-      <circle cx="12" cy="7" r="4"></circle>
-    </svg>
-  );
-
-  const ChevronDownIcon = ({ className, size = 16 }) => (
-    <svg
-      className={className}
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <polyline points="6 9 12 15 18 9"></polyline>
-    </svg>
-  );
-
-  const ClockIcon = ({ className, size = 16 }) => (
-    <svg
-      className={className}
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <circle cx="12" cy="12" r="10"></circle>
-      <polyline points="12 6 12 12 16 14"></polyline>
-    </svg>
-  );
-
-  const CalendarIcon = ({ className, size = 16 }) => (
-    <svg
-      className={className}
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-      <line x1="16" y1="2" x2="16" y2="6"></line>
-      <line x1="8" y1="2" x2="8" y2="6"></line>
-      <line x1="3" y1="10" x2="21" y2="10"></line>
-    </svg>
-  );
-
   return (
     <div>
       {/* Selection Section */}
-      <div className="doctor-selection-section">
-        <div className="selection-card">
-          <h2 className="selection-title">Select Doctor & Patient</h2>
-          <p className="selection-subtitle">
-            Choose a doctor and patient to view their locations on the map
-          </p>
-          
-          {/* Doctor Selection */}
-          <div className="form-group">
-            <label className="form-label">Doctor Name</label>
-            <select
-              value={selectedDoctorFromDropdown.doctorId || ""}
-              onChange={handleDoctorSelect}
-              disabled={loadingDoctors}
-              className="form-select"
-            >
-              <option value="">
-                {loadingDoctors ? "Loading doctors..." : "-- Select a doctor --"}
-              </option>
-              {allDoctors.map((doctor) => (
-                <option key={doctor.doctorId} value={doctor.doctorId}>
-                  {doctor.name} - {doctor.specialization}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Patient Selection */}
-          <div className="form-group" style={{ marginTop: '20px' }}>
-            <label className="form-label">Patient Name</label>
-            <select
-              value={selectedPatient?.patientId || ""}
-              onChange={handlePatientSelect}
-              disabled={loadingPatients}
-              className="form-select"
-            >
-              <option value="">
-                {loadingPatients ? "Loading patients..." : "-- Select a patient --"}
-              </option>
-              {allPatients.map((patient) => (
-                <option key={patient.patientId} value={patient.patientId}>
-                  {patient.firstName} {patient.lastName} - {patient.address}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {loadingDoctorDetails && (
-            <div className="loading-message">Loading doctor details...</div>
-          )}
-
-          {/* Doctor Details Display */}
-          {doctorDetails && !loadingDoctorDetails && (
-            <div className="doctor-details-card">
-              <div className="details-grid">
-                <div className="details-column">
-                  <h3 className="doctor-details-name">{doctorDetails.doctorName}</h3>
-                  <p className="doctor-details-specialty">{doctorDetails.specialization}</p>
-                  <p className="doctor-details-text">{doctorDetails.qualification}</p>
-                  <p className="doctor-details-text">Experience: {doctorDetails.yearOfExperience} years</p>
+      {isFromLanding ? (
+        <div className="doctor-selection-section">
+          <div className="selection-card">
+            <h2 className="selection-title">Doctor Selected</h2>
+            <p className="selection-subtitle">You selected a doctor from the landing page. Patient selection is taken from your account where possible.</p>
+            {selectedDoctorFromDropdown?.name && (
+                <div style={{ marginTop: 12 }}>
+                  {loadingDoctorDetails ? (
+                    <div>Loading doctor profile...</div>
+                  ) : doctorDetails ? (
+                    <DoctorDetails
+                      doctor={doctorDetails}
+                      workplaces={doctorWorkplaces}
+                      expandedWorkplaces={expandedWorkplaces}
+                      toggleWorkplaceExpansion={toggleWorkplaceExpansion}
+                      selectedPatient={selectedPatient}
+                      viewMode={viewMode}
+                      radius={radius}
+                    />
+                  ) : (
+                    <div><strong>Doctor:</strong> Dr. {selectedDoctorFromDropdown.name}</div>
+                  )}
                 </div>
-                <div className="details-column">
-                  <p className="doctor-details-contact">
-                    <PhoneIcon size={14} className="inline-icon" />
-                    {doctorDetails.phoneNumber}
-                  </p>
-                  <p className="doctor-details-contact">
-                    📧 {doctorDetails.email}
-                  </p>
-                  <p className="doctor-details-contact">
-                    <MapPinIcon size={14} className="inline-icon" />
-                    {doctorDetails.address}
-                  </p>
-                  <p className="doctor-details-contact">
-                    License: {doctorDetails.licenseNumber}
-                  </p>
-                </div>
+              )}
+            {selectedPatient && (
+              <div style={{ marginTop: 8 }}>
+                <strong>Patient:</strong> {selectedPatient.firstName} {selectedPatient.lastName}
               </div>
-            </div>
-          )}
-
-          {/* Patient Details Display */}
-          {selectedPatient && (
-            <div className="doctor-details-card" style={{ marginTop: '20px', borderLeft: '4px solid #dc2626' }}>
-              <div className="details-grid">
-                <div className="details-column">
-                  <h3 className="doctor-details-name" style={{ color: '#dc2626' }}>
-                    <UserIcon size={20} className="inline-icon" />
-                    {selectedPatient.firstName} {selectedPatient.lastName}
-                  </h3>
-                  <p className="doctor-details-text">Patient ID: {selectedPatient.patientId}</p>
-                  <p className="doctor-details-text">User ID: {selectedPatient.userId}</p>
-                </div>
-                <div className="details-column">
-                  <p className="doctor-details-contact">
-                    <MapPinIcon size={14} className="inline-icon" />
-                    {selectedPatient.address}
-                  </p>
-                  <p className="doctor-details-contact" style={{ color: '#dc2626', fontWeight: '500' }}>
-                    📍 GPS: ({selectedPatient.lat}, {selectedPatient.lng})
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="doctor-selection-section">
+          <div className="selection-card">
+            <h2 className="selection-title">Select Doctor & Patient</h2>
+            <p className="selection-subtitle">
+              Choose a doctor and patient to view their locations on the map
+            </p>
+
+            {/* Doctor Selection */}
+            <div className="form-group">
+              <label className="form-label">Doctor Name</label>
+              <select
+                value={selectedDoctorFromDropdown.doctorId || ""}
+                onChange={handleDoctorSelect}
+                disabled={loadingDoctors}
+                className="form-select"
+              >
+                <option value="">
+                  {loadingDoctors ? "Loading doctors..." : "-- Select a doctor --"}
+                </option>
+                {allDoctors.map((doctor) => (
+                  <option key={doctor.doctorId} value={doctor.doctorId}>
+                    {doctor.name} - {doctor.specialization}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Patient Selection */}
+            <div className="form-group" style={{ marginTop: '20px' }}>
+              <label className="form-label">Patient Name</label>
+              <select
+                value={selectedPatient?.patientId || ""}
+                onChange={handlePatientSelect}
+                disabled={loadingPatients}
+                className="form-select"
+              >
+                <option value="">
+                  {loadingPatients ? "Loading patients..." : "-- Select a patient --"}
+                </option>
+                {allPatients.map((patient) => (
+                  <option key={patient.patientId} value={patient.patientId}>
+                    {patient.firstName} {patient.lastName} - {patient.address}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {loadingDoctorDetails && (
+              <div className="loading-message">Loading doctor details...</div>
+            )}
+
+            {/* Doctor Details Display */}
+            {doctorDetails && !loadingDoctorDetails && (
+              <DoctorDetails
+                doctor={doctorDetails}
+                workplaces={doctorWorkplaces}
+                expandedWorkplaces={expandedWorkplaces}
+                toggleWorkplaceExpansion={toggleWorkplaceExpansion}
+                selectedPatient={selectedPatient}
+                viewMode={viewMode}
+                radius={radius}
+              />
+            )}
+
+            {/* Patient Details Display */}
+            {selectedPatient && (
+              <div className="doctor-details-card" style={{ marginTop: '20px', borderLeft: '4px solid #dc2626' }}>
+                <div className="details-grid">
+                  <div className="details-column">
+                    <h3 className="doctor-details-name" style={{ color: '#dc2626' }}>
+                      {selectedPatient.firstName} {selectedPatient.lastName}
+                    </h3>
+                    <p className="doctor-details-text">Patient ID: {selectedPatient.patientId}</p>
+                    <p className="doctor-details-text">User ID: {selectedPatient.userId}</p>
+                  </div>
+                  <div className="details-column">
+                    <p className="doctor-details-contact">
+                      <span style={{ marginRight: 6 }}>📍</span>{selectedPatient.address}
+                    </p>
+                    <p className="doctor-details-contact" style={{ color: '#dc2626', fontWeight: '500' }}>
+                      GPS: ({selectedPatient.lat}, {selectedPatient.lng})
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       <div className="doctor-map-container">
         {/* Sidebar */}
@@ -753,27 +694,22 @@ function DoctorLocationMap() {
                       <p className="doctor-specialty">{workplace.timePeriod}</p>
                       <div className="doctor-details">
                         <div className="detail-item">
-                          <MapPinIcon className="detail-icon" size={16} />
+                          <span style={{ marginRight: 6 }}>📍</span>
                           <span>{workplace.hospitalAddress}</span>
                         </div>
                         <div className="detail-item">
-                          <PhoneIcon className="detail-icon" size={16} />
+                          <span style={{ marginRight: 6 }}>📞</span>
                           <span>{workplace.phoneNumber}</span>
                         </div>
                         {workplace.distance !== undefined && (
                           <div className="detail-item" style={{ color: '#059669', fontWeight: '600' }}>
-                            <MapPinIcon className="detail-icon" size={16} />
+                            <span style={{ marginRight: 6 }}>📍</span>
                             <span>{workplace.distance.toFixed(2)} km away</span>
                           </div>
                         )}
                       </div>
                     </div>
-                    <MapPinIcon
-                      className={`location-pin ${
-                        selectedDoctor?.hospitalId === workplace.hospitalId ? "active" : ""
-                      }`}
-                      size={24}
-                    />
+                    <div style={{ width: 40, height: 40 }} />
                   </div>
                   
                   {/* Available Slots Section */}
@@ -799,17 +735,9 @@ function DoctorLocationMap() {
                           fontWeight: '600',
                           color: '#374151'
                         }}
-                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f3f4f6'}
-                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#f9fafb'}
                       >
                         <span>Available Time Slots ({workplace.availableSlots.length})</span>
-                        <ChevronDownIcon 
-                          size={18} 
-                          style={{
-                            transform: expandedWorkplaces[workplace.hospitalId] ? 'rotate(180deg)' : 'rotate(0deg)',
-                            transition: 'transform 0.2s'
-                          }}
-                        />
+                        <span style={{ transform: expandedWorkplaces[workplace.hospitalId] ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>⌄</span>
                       </button>
                       
                       {/* Expanded Slots */}
@@ -830,7 +758,7 @@ function DoctorLocationMap() {
                             >
                               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                  <CalendarIcon size={16} style={{ color: '#059669' }} />
+                                  <span style={{ color: '#059669' }}>📅</span>
                                   <span style={{ fontSize: '14px', fontWeight: '600', color: '#065f46' }}>
                                     {slot.dayOfWeek}
                                   </span>
@@ -848,7 +776,7 @@ function DoctorLocationMap() {
                               </div>
                               
                               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <ClockIcon size={16} style={{ color: '#059669' }} />
+                                <span style={{ color: '#059669' }}>⏰</span>
                                 <span style={{ fontSize: '13px', color: '#065f46' }}>
                                   {slot.timePeriod}
                                 </span>
@@ -857,8 +785,12 @@ function DoctorLocationMap() {
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  // TODO: Navigate to booking page
-                                  console.log('Book slot:', slot.slotId);
+                                  try {
+                                    const q = new URLSearchParams({ doctorId: routeDoctorId || (selectedDoctor && selectedDoctor.doctorId) || '' , hospitalId: workplace.hospitalId, slotId: slot.slotId });
+                                    navigate(`/booking?${q.toString()}`);
+                                  } catch (err) {
+                                    console.error('Failed to navigate to booking page', err);
+                                  }
                                 }}
                                 style={{
                                   marginTop: '4px',
@@ -872,8 +804,6 @@ function DoctorLocationMap() {
                                   cursor: 'pointer',
                                   transition: 'all 0.2s'
                                 }}
-                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#047857'}
-                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#059669'}
                               >
                                 View & Book Slot
                               </button>
@@ -891,6 +821,32 @@ function DoctorLocationMap() {
 
         {/* Map */}
         <div className="map-container">
+          {/* Doctor summary overlay shown on top of the map */}
+          {doctorDetails && (
+            <div className="map-doctor-overlay">
+              <div className="map-doctor-left">
+                <img
+                  src={doctorDetails.image || '/default-avatar.svg'}
+                  alt={doctorDetails.doctorName}
+                  className="map-doctor-avatar"
+                  onError={(e) => { e.target.onerror = null; e.target.src = '/default-avatar.svg'; }}
+                />
+              </div>
+              <div className="map-doctor-info">
+                <div className="map-doctor-name">Dr. {doctorDetails.doctorName}</div>
+                <div className="map-doctor-special">{doctorDetails.specialization} • {doctorDetails.qualification}</div>
+                <div className="map-doctor-meta">
+                  <span>Exp: {doctorDetails.yearOfExperience ?? doctorDetails.yearOfExperience === 0 ? doctorDetails.yearOfExperience : '—'} yrs</span>
+                  <span className="meta-sep">|</span>
+                  <span>Fee: {doctorDetails.consultationFee ? doctorDetails.consultationFee : '—'}</span>
+                </div>
+              </div>
+              <div className="map-doctor-actions">
+                <a className="map-doctor-contact" href={`tel:${doctorDetails.phoneNumber}`}>📞</a>
+                <a className="map-doctor-contact" href={`mailto:${doctorDetails.email}`}>✉️</a>
+              </div>
+            </div>
+          )}
           {mapLoading && (
             <div className="map-loading">
               <div className="loading-spinner"></div>
@@ -909,3 +865,4 @@ function DoctorLocationMap() {
 }
 
 export default DoctorLocationMap;
+

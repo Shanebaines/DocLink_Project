@@ -1,0 +1,43 @@
+.stats-cards-wrap { margin-top: 18px; margin-bottom: 22px; }
+.stats-cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; }
+.stats-card, .stats-cards .stats-card {
+  position: relative;
+  border-radius: 12px;
+  color: #04263a;
+  padding: 14px;
+  box-shadow: 0 8px 30px rgba(2,6,23,0.06);
+  display:flex;
+  align-items:center;
+  /* FORCE transparent inner fill and remove any gradient background from other rules */
+  background: transparent !important;
+  background-image: none !important;
+  background-origin: initial !important;
+  background-clip: initial !important;
+  /* gradient only on the border */
+  border: 1px solid transparent !important;
+  -webkit-border-image: linear-gradient(90deg,#1e90ff,#11998e) 1 !important;
+  border-image: linear-gradient(90deg,#1e90ff,#11998e) 1 !important;
+  transition: transform 200ms cubic-bezier(.2,.9,.2,1), box-shadow 200ms ease, filter 200ms ease;
+}
+.stats-card:hover, .stats-card:focus-within { transform: translateY(-8px) scale(1.02); box-shadow: 0 18px 40px rgba(2,6,23,0.14); cursor: pointer; }
+.stats-card-body { display:flex; align-items:center; justify-content:space-between; width:100%; }
+.stats-left { display:flex; flex-direction:column; gap:4px; }
+.stats-label { font-size: 14px; opacity:0.95; font-weight:700; }
+.stats-value { font-size: 28px; font-weight:800; margin-top:6px; }
+.stats-sub { font-size: 13px; opacity:0.9; margin-top:4px; }
+.stats-icon { display:flex; align-items:center; justify-content:center; width:64px; height:64px; border-radius:12px; background: linear-gradient(90deg,#1e90ff,#11998e); transition: background 180ms ease, transform 180ms ease; box-shadow: 0 6px 20px rgba(17,24,39,0.06); }
+.stats-icon svg { opacity: 0.98; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.06)); }
+.stats-card:hover .stats-icon, .stats-card:focus-within .stats-icon { transform: translateY(-3px); background: linear-gradient(90deg,#1e90ff,#11998e); }
+
+/* keyboard focus accessibility */
+.stats-card:focus-within { outline: 2px solid rgba(255,255,255,0.12); }
+
+@media (max-width: 1200px) {
+  .stats-cards { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 900px) {
+  .stats-cards { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 520px) {
+  .stats-cards { grid-template-columns: repeat(1, 1fr); }
+}

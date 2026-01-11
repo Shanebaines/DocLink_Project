@@ -1,9 +1,12 @@
 package com.springbootpractice.doclink.Listner.Controllers;
 
-import com.springbootpractice.doclink.Kernal.Entity.Appointment;
-import com.springbootpractice.doclink.Kernal.Service.AppointmentService;
+import com.springbootpractice.doclink.Kernel.Entity.Appointment;
+import com.springbootpractice.doclink.Kernel.Enums.AppointmentStatusType;
+import com.springbootpractice.doclink.Kernel.Service.AppointmentService;
 import com.springbootpractice.doclink.Listner.Dto.Request.CreateAppointmentRequestDto;
+import com.springbootpractice.doclink.Listner.Dto.Request.patientSeatDto;
 import com.springbootpractice.doclink.Listner.Dto.Request.UpdateStatusRequestDto;
+import com.springbootpractice.doclink.Listner.Dto.Response.seatViewDto;
 import com.springbootpractice.doclink.Listner.Dto.Response.viewAppointmentsDto;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -23,6 +26,11 @@ public class AppointmentController {
     @GetMapping("/viewMyAppointments") //tested
     public ResponseEntity<List<viewAppointmentsDto>> viewAppointments(@RequestParam Long id){
         return appointmentService.viewAppointments(id);
+    }
+
+    @GetMapping("/viewSeat")
+    public ResponseEntity<seatViewDto> viewSeat(@RequestBody patientSeatDto patientSeatDto){
+        return appointmentService.viewSeat(patientSeatDto);
     }
 
     @PostMapping("/book") //tested
@@ -56,4 +64,25 @@ public class AppointmentController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected server error occurred.");
         }
     }
+
+    @PatchMapping("/updateStatusByDoctor")
+    public ResponseEntity<?> updateAppointmentStatusByDoctor(
+            @RequestParam AppointmentStatusType appointmentStatus,
+            @Valid @RequestBody patientSeatDto requestDto) {
+        try {
+            Appointment updated = appointmentService.updateAppointmentStatusByDoctor(requestDto, appointmentStatus);
+            String msg = String.format("Appointment %d marked as %s successfully.",
+                    updated.getAppointmentId(),
+                    appointmentStatus.name().toUpperCase());
+            return ResponseEntity.ok(msg);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Unexpected server error while updating appointment status.");
+        }
+    }
+
 }
