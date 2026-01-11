@@ -1,11 +1,11 @@
-package com.springbootpractice.doclink.Kernel.Service;
+package com.springbootpractice.doclink.Kernal.Service;
 
 import com.springbootpractice.doclink.Dealer.DoctorRepository;
 import com.springbootpractice.doclink.Dealer.FeedbackRepository;
 import com.springbootpractice.doclink.Dealer.PatientRepository;
-import com.springbootpractice.doclink.Kernel.Entity.Doctor;
-import com.springbootpractice.doclink.Kernel.Entity.Feedback;
-import com.springbootpractice.doclink.Kernel.Entity.Patient;
+import com.springbootpractice.doclink.Kernal.Entity.Doctor;
+import com.springbootpractice.doclink.Kernal.Entity.Feedback;
+import com.springbootpractice.doclink.Kernal.Entity.Patient;
 import com.springbootpractice.doclink.Listner.Dto.Request.CreateFeedbackDto;
 import com.springbootpractice.doclink.Listner.Dto.Response.FeedbackViewDto;
 import lombok.RequiredArgsConstructor;

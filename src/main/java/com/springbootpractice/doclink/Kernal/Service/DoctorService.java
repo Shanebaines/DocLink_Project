@@ -20,7 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 // Check your package name in RatingUtils.java first!
 // It should likely be: package com.springbootpractice.doclink.Util;
 
-import com.springbootpractice.doclink.Kernel.Util.RatingUtils;
+import com.springbootpractice.doclink.Kernal.Util.RatingUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

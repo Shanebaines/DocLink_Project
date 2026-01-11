@@ -1,7 +1,7 @@
 package com.springbootpractice.doclink.Listner.Dto.Response;
 
 import lombok.Data;
-import com.springbootpractice.doclink.Kernel.Enums.PrescriptionStatusType;
+import com.springbootpractice.doclink.Kernal.Enums.PrescriptionStatusType;
 import java.time.LocalDate;
 import java.util.List;
 

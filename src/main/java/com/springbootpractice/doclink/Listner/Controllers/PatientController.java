@@ -1,6 +1,6 @@
 package com.springbootpractice.doclink.Listner.Controllers;
 
-import com.springbootpractice.doclink.Kernel.Service.PatientService;
+import com.springbootpractice.doclink.Kernal.Service.PatientService;
 import com.springbootpractice.doclink.Listner.Dto.Response.ViewPatientDto;
 import com.springbootpractice.doclink.Listner.Dto.Response.ViewPatientsDto;
 import lombok.AllArgsConstructor;

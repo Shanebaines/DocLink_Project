@@ -1,6 +1,6 @@
 package com.springbootpractice.doclink.Listner.Controllers;
 
-import com.springbootpractice.doclink.Kernel.Service.FeedbackService;
+import com.springbootpractice.doclink.Kernal.Service.FeedbackService;
 import com.springbootpractice.doclink.Listner.Dto.Request.CreateFeedbackDto;
 import com.springbootpractice.doclink.Listner.Dto.Response.FeedbackViewDto;
 import jakarta.validation.Valid;
