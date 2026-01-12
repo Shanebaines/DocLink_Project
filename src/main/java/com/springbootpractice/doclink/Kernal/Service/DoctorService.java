@@ -24,12 +24,37 @@ import com.springbootpractice.doclink.Kernal.Util.RatingUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.security.Principal;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.springbootpractice.doclink.Dealer.DoctorRepository;
+import com.springbootpractice.doclink.Dealer.DoctorTimeSlotRepository;
+import com.springbootpractice.doclink.Dealer.DoctorsInHospitalRepository;
+import com.springbootpractice.doclink.Kernal.Entity.Doctor;
+import com.springbootpractice.doclink.Kernal.Entity.Hospital;
+import com.springbootpractice.doclink.Kernal.Relations.Doctor_time_slots;
+import com.springbootpractice.doclink.Kernal.Relations.Doctors_in_Hospital;
+import com.springbootpractice.doclink.Listner.Dto.Response.AvailableSlotsDto;
+import com.springbootpractice.doclink.Listner.Dto.Response.PagedResponse;
+import com.springbootpractice.doclink.Listner.Dto.Response.ViewDoctorDto;
+import com.springbootpractice.doclink.Listner.Dto.Response.ViewDoctorsDto;
+import com.springbootpractice.doclink.Listner.Dto.Response.WorkPLaceDto;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
@@ -209,6 +234,42 @@ public class DoctorService {
     public ResponseEntity<List<String>> getSpecializations() {
         return ResponseEntity.ok(doctorRepository.findAllSpecializations());
     }
+
+        @Transactional(readOnly = true)
+        public ResponseEntity<List<AvailableSlotsDto>> slotsForAuthenticatedDoctor(Principal principal, Long hospitalId, String hospitalName) {
+                if (principal == null || principal.getName() == null) {
+                        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+                }
+
+                Optional<Doctor> optDoctor = doctorRepository.findByUserUsername(principal.getName());
+                if (optDoctor.isEmpty()) {
+                        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+                }
+
+                Long doctorId = optDoctor.get().getDoctorId();
+                return slotsByHospital(doctorId, hospitalId, hospitalName);
+        }
+
+        @Transactional(readOnly = true)
+        public ResponseEntity<List<AvailableSlotsDto>> slotsByHospital(Long doctorId, Long hospitalId, String hospitalName) {
+                List<Doctor_time_slots> timeSlots;
+
+                if (hospitalId != null) {
+                        timeSlots = doctorTimeSlotRepository.findByDoctorDoctorIdAndHospitalHospitalIdOrderByDayOfWeekAscStartTimeAsc(
+                                        doctorId, hospitalId);
+                } else if (hospitalName != null && !hospitalName.trim().isEmpty()) {
+                        timeSlots = doctorTimeSlotRepository.findByDoctorDoctorIdAndHospitalHospitalNameOrderByDayOfWeekAscStartTimeAsc(
+                                        doctorId, hospitalName.trim());
+                } else {
+                        return ResponseEntity.badRequest().build();
+                }
+
+                List<AvailableSlotsDto> slotDtos = timeSlots.stream()
+                                .map(this::toAvailableSlotDto)
+                                .collect(Collectors.toList());
+
+                return ResponseEntity.ok(slotDtos);
+        }
 
     private String emptyToNull(String s) {
         return (s == null || s.trim().isEmpty()) ? null : s.trim();
