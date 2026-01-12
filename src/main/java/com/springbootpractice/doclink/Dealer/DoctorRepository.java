@@ -1,6 +1,6 @@
 package com.springbootpractice.doclink.Dealer;
 
-import com.springbootpractice.doclink.Kernel.Entity.Doctor;
+import com.springbootpractice.doclink.Kernal.Entity.Doctor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

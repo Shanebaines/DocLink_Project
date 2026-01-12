@@ -1,6 +1,6 @@
 package com.springbootpractice.doclink.Dealer;
 
-import com.springbootpractice.doclink.Kernel.Relations.PrescriptionToken;
+import com.springbootpractice.doclink.Kernal.Relations.PrescriptionToken;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

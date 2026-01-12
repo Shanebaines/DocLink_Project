@@ -1,6 +1,6 @@
 package com.springbootpractice.doclink.Listner.Controllers;
 
-import com.springbootpractice.doclink.Kernel.Service.PharmacyService;
+import com.springbootpractice.doclink.Kernal.Service.PharmacyService;
 import com.springbootpractice.doclink.Listner.Dto.Response.PrescriptionMedicationResponse_Pharmacy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
