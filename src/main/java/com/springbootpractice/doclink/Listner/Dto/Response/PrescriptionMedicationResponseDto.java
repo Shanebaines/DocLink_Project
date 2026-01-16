@@ -1,9 +1,12 @@
 package com.springbootpractice.doclink.Listner.Dto.Response;
 
 import lombok.Data;
+import lombok.Builder;
 
 @Data
-public class PrescriptionMedicationResponse {
+@Builder
+public class PrescriptionMedicationResponseDto {
+
     private Long prescriptionMedicationId;
     private Long medicationId;
     private String medicationName;

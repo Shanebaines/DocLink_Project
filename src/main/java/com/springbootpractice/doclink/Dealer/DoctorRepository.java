@@ -1,8 +1,6 @@
 package com.springbootpractice.doclink.Dealer;
 
-import java.util.List;
-import java.util.Optional;
-
+import com.springbootpractice.doclink.Kernal.Entity.Doctor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -10,7 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import com.springbootpractice.doclink.Kernal.Entity.Doctor;
+import java.util.List;
 
 @Repository
 public interface DoctorRepository extends JpaRepository<Doctor,Long> {
@@ -188,6 +186,4 @@ public interface DoctorRepository extends JpaRepository<Doctor,Long> {
 
     @Query("select distinct d.specialization from Doctor d where d.specialization is not null order by d.specialization")
     List<String> findAllSpecializations();
-
-    Optional<Doctor> findByUserUsername(String username);
 }
