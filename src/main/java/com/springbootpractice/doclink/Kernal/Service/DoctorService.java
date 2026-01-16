@@ -7,10 +7,13 @@ import com.springbootpractice.doclink.Kernal.Relations.Doctors_in_Hospital;
 import com.springbootpractice.doclink.Listner.Dto.Response.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.springbootpractice.doclink.Kernal.Util.RatingUtils;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -28,6 +31,9 @@ public class DoctorService {
 
     private final MedicalRecordRepository medicalRecordRepository;
     private final PatientRepository patientRepository;
+
+    @Autowired  // <--- ADD THIS
+    private FeedbackRepository feedbackRepository;
 
     private final PrescriptionRepository prescriptionRepository;
     private final PrescriptionMedicationRepository prescriptionMedicationRepository;
@@ -195,6 +201,24 @@ public class DoctorService {
 
     private String emptyToNull(String s) {
         return (s == null || s.trim().isEmpty()) ? null : s.trim();
+    }
+
+    public void updateDoctorRating(String doctorId) {
+        // 1. Fetch all ratings (Convert ID to Long here)
+        // NOTE: Ensure your FeedbackRepository has a method findRatingsByDoctorId(Long id)
+        List<Integer> ratingList = feedbackRepository.findRatingsByDoctorId(Long.parseLong(doctorId));
+
+        // 2. Use the Util function
+        double newAverage = RatingUtils.calculateAverageRating(ratingList);
+
+        // 3. Save the new average to the Doctor entity
+        // Convert ID to Long here as well
+        Doctor doctor = doctorRepository.findById(Long.parseLong(doctorId)).orElse(null);
+
+        if (doctor != null) {
+            doctor.setAverageRating(newAverage); // This will work after you update Doctor.java
+            doctorRepository.save(doctor);
+        }
     }
 
 }
