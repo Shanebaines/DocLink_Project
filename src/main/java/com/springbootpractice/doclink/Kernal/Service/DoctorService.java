@@ -2,19 +2,35 @@ package com.springbootpractice.doclink.Kernal.Service;
 
 import com.springbootpractice.doclink.Dealer.*;
 import com.springbootpractice.doclink.Kernal.Entity.*;
+import com.springbootpractice.doclink.Kernal.Enums.PrescriptionStatusType;
 import com.springbootpractice.doclink.Kernal.Relations.Doctor_time_slots;
 import com.springbootpractice.doclink.Kernal.Relations.Doctors_in_Hospital;
+import com.springbootpractice.doclink.Kernal.Relations.MedicalRecord;
+import com.springbootpractice.doclink.Listner.Dto.Request.CreateMedicalRecordDto;
+import com.springbootpractice.doclink.Listner.Dto.Request.CreateMedicalReportDto;
+import com.springbootpractice.doclink.Listner.Dto.Request.CreatePrescriptionDto;
 import com.springbootpractice.doclink.Listner.Dto.Response.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+
+import com.springbootpractice.doclink.Listner.Dto.Request.PrescriptionMedicationDto;
+import com.springbootpractice.doclink.Listner.Dto.Response.PrescriptionResponseDto;
+import com.springbootpractice.doclink.Listner.Dto.Response.PrescriptionMedicationResponseDto;
+import com.springbootpractice.doclink.Kernal.Entity.PrescriptionMedication;
+
 import com.springbootpractice.doclink.Kernal.Util.RatingUtils;
 
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
@@ -219,6 +235,211 @@ public class DoctorService {
             doctor.setAverageRating(newAverage); // This will work after you update Doctor.java
             doctorRepository.save(doctor);
         }
+    }
+
+    @Transactional
+    public ResponseEntity<MedicalRecordResponseDto> createMedicalRecord(CreateMedicalRecordDto createDto) {
+
+        // Validations
+        // At least one of medicalReport or prescription must be present
+        boolean hasMedicalReport = createDto.getMedicalReport() != null;
+        boolean hasPrescription = createDto.getPrescription() != null;
+
+        if (!hasMedicalReport && !hasPrescription) {
+            log.error("createMedicalRecord: both medicalReport and prescription are null");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+
+        // Validate patient
+        Optional<Patient> optPatient = patientRepository.findById(createDto.getPatientId());
+        if (optPatient.isEmpty()) {
+            log.error("Patient not found with ID: {}", createDto.getPatientId());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        Patient patient = optPatient.get();
+
+        // Validate doctor
+        Optional<Doctor> optDoctor = doctorRepository.findById(createDto.getDoctorId());
+        if (optDoctor.isEmpty()) {
+            log.error("Doctor not found with ID: {}", createDto.getDoctorId());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
+        Doctor doctor = optDoctor.get();
+
+        // If there is a prescription section, validate medications first
+        if (hasPrescription) {
+            CreatePrescriptionDto rxDto = createDto.getPrescription();
+
+            if (rxDto.getMedications() == null || rxDto.getMedications().isEmpty()) {
+                log.error("No medications provided in embedded prescription");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            }
+
+            for (PrescriptionMedicationDto medDto : rxDto.getMedications()) {
+                if (medDto.getMedicationId() == null) {
+                    log.error("Medication ID is null in embedded prescription");
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+                }
+                if (medicationRepository.findById(medDto.getMedicationId()).isEmpty()) {
+                    log.error("Medication not found with ID: {}", medDto.getMedicationId());
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+                }
+            }
+        }
+
+
+        
+
+        // Build MedicalRecord (not yet persisted)
+        MedicalRecord medicalRecord = new MedicalRecord();
+        medicalRecord.setPatient(patient);
+        medicalRecord.setDoctor(doctor);
+        medicalRecord.setHasMedicalReport(hasMedicalReport);
+        medicalRecord.setHasPrescription(hasPrescription);
+
+        // Build MedicalReport entity if provided
+        if (hasMedicalReport) {
+            CreateMedicalReportDto reportDto = createDto.getMedicalReport();
+
+            MedicalReport medicalReport = new MedicalReport();
+            medicalReport.setMedicalRecord(medicalRecord);   // @MapsId
+            medicalReport.setVisitDate(reportDto.getVisitDate());
+            medicalReport.setSymptoms(reportDto.getSymptoms());
+            medicalReport.setDiagnosis(reportDto.getDiagnosis());
+            medicalReport.setTreatment(reportDto.getTreatment());
+            medicalReport.setRecommendation(reportDto.getRecommendation());
+            medicalReport.setVitalSigns(reportDto.getVitalSigns());
+
+            medicalRecord.setMedicalReport(medicalReport);
+        }
+
+        // Persist MedicalRecord (cascades to MedicalReport)
+        MedicalRecord savedRecord = medicalRecordRepository.save(medicalRecord);
+        log.info("Medical record created with ID: {}", savedRecord.getMedicalRecordId());
+
+        // If prescription data was provided, create prescription linked to this record
+        PrescriptionResponseDto prescriptionDto = null;
+        if (hasPrescription) {
+            prescriptionDto = createPrescriptionForRecord(savedRecord, createDto.getPrescription());
+        }
+
+        // Build MedicalReportResponseDto (if present)
+        MedicalReportResponseDto medicalReportResponse = null;
+        if (hasMedicalReport) {
+            MedicalReport mr = savedRecord.getMedicalReport();
+            medicalReportResponse = MedicalReportResponseDto.builder()
+                    .reportId(mr.getReportId())
+                    .visitDate(mr.getVisitDate())
+                    .symptoms(mr.getSymptoms())
+                    .diagnosis(mr.getDiagnosis())
+                    .treatment(mr.getTreatment())
+                    .recommendation(mr.getRecommendation())
+                    .vitalSigns(mr.getVitalSigns())
+                    .createdAt(mr.getCreatedAt())
+                    .updatedAt(mr.getUpdatedAt())
+                    .build();
+        }
+
+        String patientName = patient.getUser().getFirstName() + " " + patient.getUser().getLastName();
+        String doctorName = doctor.getUser().getFirstName() + " " + doctor.getUser().getLastName();
+
+        MedicalRecordResponseDto response = MedicalRecordResponseDto.builder()
+                .medicalRecordId(savedRecord.getMedicalRecordId())
+                .patientId(patient.getPatientId())
+                .patientName(patientName)
+                .doctorId(doctor.getDoctorId())
+                .doctorName(doctorName)
+                .hasMedicalReport(hasMedicalReport)
+                .hasPrescription(hasPrescription)
+                .medicalReport(medicalReportResponse)
+                .prescription(prescriptionDto)
+                .createdAt(savedRecord.getCreatedAt())
+                .updatedAt(savedRecord.getUpdatedAt())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+
+    private PrescriptionResponseDto createPrescriptionForRecord(
+            MedicalRecord medicalRecord,
+            CreatePrescriptionDto prescriptionDto) {
+
+        LocalDateTime now = LocalDateTime.now();
+
+        // Create Prescription linked to the MedicalRecord (and, if present, patient/doctor)
+        Prescription prescription = new Prescription();
+        prescription.setMedicalRecord(medicalRecord);
+
+
+        prescription.setPrescriptionDate(
+                prescriptionDto.getPrescriptionDate() != null
+                        ? prescriptionDto.getPrescriptionDate()
+                        : LocalDate.now()
+        );
+        prescription.setDiagnosis(prescriptionDto.getDiagnosis());
+        prescription.setInstructions(prescriptionDto.getInstructions());
+        prescription.setStatus(PrescriptionStatusType.active);
+        prescription.setCreatedAt(now);
+        prescription.setUpdatedAt(now);
+
+        Prescription savedPrescription = prescriptionRepository.save(prescription);
+        log.info("Prescription created with ID: {}", savedPrescription.getPrescriptionId());
+
+        // Create prescription medications
+        List<PrescriptionMedication> prescriptionMedications = new ArrayList<>();
+        for (PrescriptionMedicationDto medDto : prescriptionDto.getMedications()) {
+            Medication medication = medicationRepository
+                    .findById(medDto.getMedicationId())
+                    .orElseThrow(); // already validated in createMedicalRecord
+
+            PrescriptionMedication prescriptionMedication = new PrescriptionMedication();
+            prescriptionMedication.setPrescription(savedPrescription);
+            prescriptionMedication.setMedication(medication);
+            prescriptionMedication.setDosage(medDto.getDosage());
+            prescriptionMedication.setFrequency(medDto.getFrequency());
+            prescriptionMedication.setDurationDays(medDto.getDurationDays());
+            prescriptionMedication.setQuantity(medDto.getQuantity());
+            prescriptionMedication.setInstructions(medDto.getInstructions());
+            prescriptionMedication.setCreatedAt(now);
+
+            prescriptionMedications.add(prescriptionMedication);
+        }
+
+        List<PrescriptionMedication> savedMedications =
+                prescriptionMedicationRepository.saveAll(prescriptionMedications);
+
+        log.info("Saved {} medications for prescription ID: {}",
+                savedMedications.size(), savedPrescription.getPrescriptionId());
+
+        // Map medications to response DTOs
+        List<PrescriptionMedicationResponseDto> medicationResponses = new ArrayList<>();
+        for (PrescriptionMedication pm : savedMedications) {
+            PrescriptionMedicationResponseDto medResponse = PrescriptionMedicationResponseDto.builder()
+                    .prescriptionMedicationId(pm.getPrescriptionMedicationId())
+                    .medicationId(pm.getMedication().getMedicationId())
+                    .medicationName(pm.getMedication().getMedicationName())
+                    .dosage(pm.getDosage())
+                    .frequency(pm.getFrequency())
+                    .durationDays(pm.getDurationDays())
+                    .quantity(pm.getQuantity())
+                    .instructions(pm.getInstructions())
+                    .build();
+            medicationResponses.add(medResponse);
+        }
+
+        // Build and return prescription DTO
+        return PrescriptionResponseDto.builder()
+                .prescriptionId(savedPrescription.getPrescriptionId())
+                .prescriptionDate(savedPrescription.getPrescriptionDate())
+                .diagnosis(savedPrescription.getDiagnosis())
+                .instructions(savedPrescription.getInstructions())
+                .status(savedPrescription.getStatus())
+                .medications(medicationResponses)
+                .createdAt(savedPrescription.getCreatedAt())
+                .updatedAt(savedPrescription.getUpdatedAt())
+                .build();
     }
 
 }

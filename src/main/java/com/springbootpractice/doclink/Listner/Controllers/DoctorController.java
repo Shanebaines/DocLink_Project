@@ -2,7 +2,10 @@ package com.springbootpractice.doclink.Listner.Controllers;
 
 import java.util.List;
 
+import com.springbootpractice.doclink.Listner.Dto.Request.CreateMedicalRecordDto;
+import com.springbootpractice.doclink.Listner.Dto.Request.CreatePrescriptionDto;
 import com.springbootpractice.doclink.Listner.Dto.Response.*;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -76,5 +79,13 @@ public class DoctorController {
     public ResponseEntity<List<String>> specializations() {
         return doctorService.getSpecializations();
     }
+
+
+    @PostMapping("/createMedicalRecord")
+    public ResponseEntity<MedicalRecordResponseDto> createMedicalRecord(
+            @RequestBody @Valid CreateMedicalRecordDto createDto) {
+        return doctorService.createMedicalRecord(createDto);
+    }
+
 
 }
