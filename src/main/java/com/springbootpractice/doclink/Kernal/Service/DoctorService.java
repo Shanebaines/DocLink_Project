@@ -289,7 +289,7 @@ public class DoctorService {
         }
 
 
-        
+
 
         // Build MedicalRecord (not yet persisted)
         MedicalRecord medicalRecord = new MedicalRecord();
@@ -440,6 +440,64 @@ public class DoctorService {
                 .createdAt(savedPrescription.getCreatedAt())
                 .updatedAt(savedPrescription.getUpdatedAt())
                 .build();
+    }
+
+
+    @Transactional
+    public ResponseEntity<PrescriptionResponseDto> createPrescription(
+            Long patientId,
+            Long doctorId,
+            CreatePrescriptionDto request) {
+
+        log.info("Creating prescription for patient ID: {} by doctor ID: {}", patientId, doctorId);
+
+        // Validate patient
+        Optional<Patient> optPatient = patientRepository.findById(patientId);
+        if (optPatient.isEmpty()) {
+            log.error("Patient not found with ID: {}", patientId);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        Patient patient = optPatient.get();
+
+        // Validate doctor
+        Optional<Doctor> optDoctor = doctorRepository.findById(doctorId);
+        if (optDoctor.isEmpty()) {
+            log.error("Doctor not found with ID: {}", doctorId);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        Doctor doctor = optDoctor.get();
+
+        // Validate medications
+        if (request.getMedications() == null || request.getMedications().isEmpty()) {
+            log.error("No medications provided for prescription");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+
+        for (PrescriptionMedicationDto medDto : request.getMedications()) {
+            if (medDto.getMedicationId() == null) {
+                log.error("Medication ID is null in prescription request");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            }
+            if (medicationRepository.findById(medDto.getMedicationId()).isEmpty()) {
+                log.error("Medication not found with ID: {}", medDto.getMedicationId());
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            }
+        }
+
+        // Create a MedicalRecord for this prescription
+        MedicalRecord medicalRecord = new MedicalRecord();
+        medicalRecord.setPatient(patient);
+        medicalRecord.setDoctor(doctor);
+        medicalRecord.setHasMedicalReport(false);
+        medicalRecord.setHasPrescription(true);
+
+        MedicalRecord savedRecord = medicalRecordRepository.save(medicalRecord);
+        log.info("Medical record created for prescription with ID: {}", savedRecord.getMedicalRecordId());
+
+        // Delegate to helper that creates Prescription + medications for this record
+        PrescriptionResponseDto responseDto = createPrescriptionForRecord(savedRecord, request);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
 
 }
