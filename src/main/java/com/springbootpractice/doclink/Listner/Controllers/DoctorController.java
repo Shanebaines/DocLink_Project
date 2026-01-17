@@ -81,19 +81,4 @@ public class DoctorController {
     }
 
 
-    @PostMapping("/createMedicalRecord")
-    public ResponseEntity<MedicalRecordResponseDto> createMedicalRecord(
-            @RequestBody @Valid CreateMedicalRecordDto createDto) {
-        return doctorService.createMedicalRecord(createDto);
-    }
-
-    @PostMapping("/createPrescription")
-    public ResponseEntity<PrescriptionResponseDto> createPrescription(
-            @RequestParam Long patientId,
-            @RequestParam Long doctorId,
-            @RequestBody @Valid CreatePrescriptionDto request) {
-        return doctorService.createPrescription(patientId, doctorId, request);
-    }
-
-
 }
