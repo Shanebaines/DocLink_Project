@@ -21,7 +21,7 @@ public class LabReport {
 
     @ManyToOne
     @JoinColumn(name = "medical_record_id")
-    private MedicalRecord medicalRecord;
+    private MedicalReport medicalRecord;
 
     @Column(name = "report_date", nullable = false)
     private LocalDate reportDate;

@@ -1,11 +1,9 @@
 package com.springbootpractice.doclink.Kernal.Service;
 
 import com.springbootpractice.doclink.Dealer.AppointmentRepository;
-import com.springbootpractice.doclink.Dealer.DoctorRepository;
 import com.springbootpractice.doclink.Dealer.PatientRepository;
 import com.springbootpractice.doclink.Dealer.DoctorTimeSlotRepository;
 import com.springbootpractice.doclink.Kernal.Entity.Appointment;
-import com.springbootpractice.doclink.Kernal.Entity.Doctor;
 import com.springbootpractice.doclink.Kernal.Entity.Patient;
 import com.springbootpractice.doclink.Kernal.Enums.AppointmentStatusType;
 import com.springbootpractice.doclink.Kernal.Relations.Doctor_time_slots;
@@ -33,7 +31,6 @@ public class AppointmentService {
     private final AppointmentRepository appointmentRepository;
     private final PatientRepository patientRepository;
     private final DoctorTimeSlotRepository doctorTimeSlotRepository;
-    private final DoctorRepository doctorRepository;
 
     /**
      * Creates a new appointment for a specific seat in a time slot.
@@ -160,14 +157,12 @@ public class AppointmentService {
                         String.format("No appointment found for slot=%d, date=%s, seat=%d",
                                 slotId, date, seat)));
 
-        AppointmentStatusType oldStatus = appointment.getStatus();
-
         // Validate current status
-        if (oldStatus == AppointmentStatusType.cancelled) {
+        if (appointment.getStatus() == AppointmentStatusType.cancelled) {
             throw new IllegalStateException("Cannot update a cancelled appointment.");
         }
 
-        if (oldStatus == appointmentStatus) {
+        if (appointment.getStatus() == appointmentStatus) {
             throw new IllegalStateException(
                     String.format("Appointment is already marked as %s.", appointmentStatus.name()));
         }
@@ -175,20 +170,7 @@ public class AppointmentService {
         appointment.setStatus(appointmentStatus);
         appointment.setUpdatedAt(LocalDateTime.now());
 
-        Appointment savedAppointment = appointmentRepository.save(appointment);
-
-        // Increment doctor's patientCount when marking as COMPLETED
-        if (oldStatus != AppointmentStatusType.completed &&
-                appointmentStatus == AppointmentStatusType.completed) {
-
-            Doctor doctor = savedAppointment.getDoctor();
-            if (doctor != null) {
-                doctor.setPatientCount(doctor.getPatientCount() + 1);
-                doctorRepository.save(doctor);
-            }
-        }
-
-        return savedAppointment;
+        return appointmentRepository.save(appointment);
     }
 
     @Transactional(readOnly = true)
